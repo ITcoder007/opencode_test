@@ -1,0 +1,13 @@
+Picked up JAVA_TOOL_OPTIONS: 
+=== Running HelloTest ===
+
+[PASS] testClassExists: Hello class should exist
+[PASS] testClassExists: Hello class exists
+[PASS] testMainIsStatic: main should be public static
+
+=== Test Results ===
+Passed: 6
+Failed: 0
+Total:  6
+
+*** ALL TESTS PASSED ***

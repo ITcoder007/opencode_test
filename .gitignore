@@ -24,3 +24,6 @@ logs/
 # Build
 dist/
 build/
+
+# Java
+*.class

@@ -45,4 +45,34 @@ public class HelloTest {
     void testGetGreetingNotEmpty() {
         assertFalse(Hello.getGreeting().isEmpty());
     }
+
+    @Test
+    @DisplayName("getGreeting should be consistent across calls")
+    void testGetGreetingConsistency() {
+        String first = Hello.getGreeting();
+        String second = Hello.getGreeting();
+        assertEquals(first, second);
+    }
+
+    @Test
+    @DisplayName("getGreeting should contain expected content")
+    void testGetGreetingContent() {
+        String greeting = Hello.getGreeting();
+        assertTrue(greeting.contains("Hello"));
+        assertTrue(greeting.contains("World"));
+    }
+
+    @Test
+    @DisplayName("main should handle null args gracefully")
+    void testMainWithNullArgs() {
+        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+        PrintStream originalOut = System.out;
+        System.setOut(new PrintStream(outContent));
+        try {
+            Hello.main(null);
+            assertEquals("Hello, World!" + System.lineSeparator(), outContent.toString());
+        } finally {
+            System.setOut(originalOut);
+        }
+    }
 }

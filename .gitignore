@@ -24,3 +24,9 @@ logs/
 # Build
 dist/
 build/
+
+# Java compiled
+*.class
+
+# Temp
+tmp/

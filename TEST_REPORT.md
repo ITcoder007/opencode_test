@@ -1,18 +1,20 @@
 # Test Report
 
-## Test Execution: HelloTest.java
+## Test Execution: HelloTest.java + HelloExtendedTest.java
 
 **Date:** 2026-05-13
-**Iteration:** 3 (dev iteration 1 — feature_python_to_java_20260513081915)
+**Iteration:** Test stage (post-dev verification)
 **Status:** ALL TESTS PASSED
 
 ### Summary
 
-- Total: 15
-- Passed: 15
-- Failed: 0
+| Suite | Total | Passed | Failed |
+|-------|-------|--------|--------|
+| HelloTest (基础 + 输出 + 健壮性) | 15 | 15 | 0 |
+| HelloExtendedTest (元数据 + 边界 + 压力) | 16 | 16 | 0 |
+| **合计** | **31** | **31** | **0** |
 
-### Basic Structure Tests
+### HelloTest — Basic Structure Tests (5/5)
 
 | Test | Result |
 |------|--------|
@@ -22,7 +24,7 @@
 | Hello has a main method | PASS |
 | main method is public static void with String[] param | PASS |
 
-### Output Correctness Tests
+### HelloTest — Output Correctness Tests (6/6)
 
 | Test | Result |
 |------|--------|
@@ -33,7 +35,7 @@
 | No trailing spaces before newline | PASS |
 | Exact output is 'Hello, World!' + newline | PASS |
 
-### Robustness Tests
+### HelloTest — Robustness Tests (4/4)
 
 | Test | Result |
 |------|--------|
@@ -42,14 +44,44 @@
 | Running main() twice produces identical output | PASS |
 | Output is exactly one line | PASS |
 
+### HelloExtendedTest — Class Metadata Tests (8/8)
+
+| Test | Result |
+|------|--------|
+| Hello class is not abstract | PASS |
+| Hello class is not final | PASS |
+| Hello extends Object directly | PASS |
+| Hello has no declared fields | PASS |
+| Hello declares only the main method | PASS |
+| Hello has a default constructor | PASS |
+| Hello can be instantiated | PASS |
+| Hello implements no interfaces | PASS |
+
+### HelloExtendedTest — Output Edge Case Tests (6/6)
+
+| Test | Result |
+|------|--------|
+| Output consists only of ASCII characters | PASS |
+| Output content is exactly 13 characters (Hello, World!) | PASS |
+| Output content contains no control characters | PASS |
+| Output contains comma at position 5 | PASS |
+| Output ends with exclamation mark | PASS |
+| Punctuation positions match Python output exactly | PASS |
+
+### HelloExtendedTest — Concurrency / Stress Tests (2/2)
+
+| Test | Result |
+|------|--------|
+| 10 sequential calls all produce identical output | PASS |
+| main() with new String[]{''} outputs correctly | PASS |
+
 ### Verification Steps
 
-1. Compiled with `javac -encoding UTF-8 Hello.java HelloTest.java` - SUCCESS
-2. Ran Python baseline: `python3 hello.py` -> `Hello, World!`
-3. Ran Java: `java Hello` -> `Hello, World!`
-4. Diff comparison: identical output
-5. Ran full test suite: `java HelloTest` -> 15/15 PASSED
+1. Compiled with `javac -encoding UTF-8 Hello.java HelloTest.java HelloExtendedTest.java` — SUCCESS
+2. Ran HelloTest: 15/15 PASSED
+3. Ran HelloExtendedTest: 16/16 PASSED
+4. Total: 31/31 PASSED
 
 ### Conclusion
 
-The Java conversion of `hello.py` to `Hello.java` is verified correct. All structural, output, and robustness tests pass.
+`hello.py` → `Hello.java` 的转换经过 31 项单元测试全部通过，覆盖类结构元数据、输出正确性、边界条件、健壮性和压力测试。转换验证通过。

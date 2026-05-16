@@ -33,6 +33,13 @@ public class HelloTest {
         testIdempotency();
         testSingleLineOutput();
 
+        System.out.println("\n--- Semantic Equivalence Tests ---");
+        testOutputLength();
+        testOutputIsAsciiOnly();
+        testOutputContainsCommaAndSpace();
+        testMainMethodReturnsVoid();
+        testNoOtherPublicMethods();
+
         System.out.println("\n=== Test Summary ===");
         System.out.println("Total: " + total + " | Passed: " + passed + " | Failed: " + failed);
         if (failed == 0) {
@@ -168,6 +175,57 @@ public class HelloTest {
                 : output;
             assertFalse(withoutTrailingNewline.contains(System.lineSeparator()));
         });
+    }
+
+    private static void testOutputLength() {
+        assertTest("Output length matches expected (14 chars + newline)", () -> {
+            String output = captureMainOutput();
+            assertEquals("Hello, World!".length() + System.lineSeparator().length(), output.length());
+        });
+    }
+
+    private static void testOutputIsAsciiOnly() {
+        assertTest("Output contains only ASCII characters", () -> {
+            String output = captureMainOutput();
+            for (char c : output.toCharArray()) {
+                assertTrue(c < 128);
+            }
+        });
+    }
+
+    private static void testOutputContainsCommaAndSpace() {
+        assertTest("Output contains ', ' (comma-space) matching Python format", () -> {
+            String output = captureMainOutput();
+            assertTrue(output.contains(", "));
+        });
+    }
+
+    private static void testMainMethodReturnsVoid() {
+        assertTest("Calling main does not throw any exception", () -> {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            PrintStream originalOut = System.out;
+            System.setOut(new PrintStream(baos));
+            try {
+                Hello.main(new String[]{});
+            } finally {
+                System.setOut(originalOut);
+            }
+            assertTrue(true);
+        });
+    }
+
+    private static void testNoOtherPublicMethods() {
+        assertTest("Hello class only has 'main' as declared public method", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            java.lang.reflect.Method[] methods = clazz.getDeclaredMethods();
+            int publicMethodCount = 0;
+            for (java.lang.reflect.Method m : methods) {
+                if (Modifier.isPublic(m.getModifiers())) {
+                    publicMethodCount++;
+                }
+            }
+            assertEquals(1, publicMethodCount);
+        }, ClassNotFoundException.class);
     }
 
     private static String captureMainOutput() {

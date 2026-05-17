@@ -2,6 +2,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.nio.charset.StandardCharsets;
 
 public class HelloTest {
 
@@ -32,6 +33,17 @@ public class HelloTest {
         testMainWithNonEmptyArgs();
         testIdempotency();
         testSingleLineOutput();
+
+        System.out.println("\n--- Extended Coverage Tests ---");
+        testClassNotAbstract();
+        testClassNotFinal();
+        testClassExtendsObject();
+        testOnlyOnePublicMethod();
+        testOutputByteLength();
+        testOutputIsUTF8();
+        testSystemOutRestored();
+        testMainReturnsNormally();
+        testConcurrentExecution();
 
         System.out.println("\n=== Test Summary ===");
         System.out.println("Total: " + total + " | Passed: " + passed + " | Failed: " + failed);
@@ -167,6 +179,113 @@ public class HelloTest {
                 ? output.substring(0, output.length() - System.lineSeparator().length())
                 : output;
             assertFalse(withoutTrailingNewline.contains(System.lineSeparator()));
+        });
+    }
+
+    private static void testClassNotAbstract() {
+        assertTest("Hello class is not abstract", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            assertFalse(Modifier.isAbstract(clazz.getModifiers()));
+        }, ClassNotFoundException.class);
+    }
+
+    private static void testClassNotFinal() {
+        assertTest("Hello class is not final", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            assertFalse(Modifier.isFinal(clazz.getModifiers()));
+        }, ClassNotFoundException.class);
+    }
+
+    private static void testClassExtendsObject() {
+        assertTest("Hello class extends Object directly", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            assertEquals(Object.class, clazz.getSuperclass());
+        }, ClassNotFoundException.class);
+    }
+
+    private static void testOnlyOnePublicMethod() {
+        assertTest("Hello has exactly one declared public static method (main)", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            Method[] methods = clazz.getDeclaredMethods();
+            int publicStaticCount = 0;
+            for (Method m : methods) {
+                int mod = m.getModifiers();
+                if (Modifier.isPublic(mod) && Modifier.isStatic(mod)) {
+                    publicStaticCount++;
+                }
+            }
+            assertEquals(1, publicStaticCount);
+        }, ClassNotFoundException.class);
+    }
+
+    private static void testOutputByteLength() {
+        assertTest("Output byte length matches expected ASCII content", () -> {
+            String output = captureMainOutput();
+            byte[] bytes = output.getBytes(StandardCharsets.UTF_8);
+            int expectedLen = "Hello, World!".getBytes(StandardCharsets.UTF_8).length
+                    + System.lineSeparator().getBytes(StandardCharsets.UTF_8).length;
+            assertEquals(expectedLen, bytes.length);
+        });
+    }
+
+    private static void testOutputIsUTF8() {
+        assertTest("Output is valid UTF-8 and contains only ASCII characters", () -> {
+            String output = captureMainOutput();
+            byte[] bytes = output.getBytes(StandardCharsets.UTF_8);
+            for (byte b : bytes) {
+                assertTrue((b & 0xFF) <= 127);
+            }
+        });
+    }
+
+    private static void testSystemOutRestored() {
+        assertTest("System.out is properly restored after captureMainOutput", () -> {
+            PrintStream before = System.out;
+            captureMainOutput();
+            PrintStream after = System.out;
+            assertTrue(before == after);
+        });
+    }
+
+    private static void testMainReturnsNormally() {
+        assertTest("main() returns normally without calling System.exit", () -> {
+            boolean[] completed = {false};
+            Thread t = new Thread(() -> {
+                Hello.main(new String[]{});
+                completed[0] = true;
+            });
+            t.start();
+            t.join(3000);
+            assertTrue(completed[0]);
+        });
+    }
+
+    private static void testConcurrentExecution() {
+        assertTest("Concurrent execution of main() produces correct output", () -> {
+            int threadCount = 5;
+            String[] results = new String[threadCount];
+            Thread[] threads = new Thread[threadCount];
+            for (int i = 0; i < threadCount; i++) {
+                final int idx = i;
+                threads[i] = new Thread(() -> {
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    synchronized (System.out) {
+                        PrintStream originalOut = System.out;
+                        System.setOut(new PrintStream(baos));
+                        try {
+                            Hello.main(new String[]{});
+                        } finally {
+                            System.setOut(originalOut);
+                        }
+                    }
+                    results[idx] = baos.toString().trim();
+                });
+            }
+            for (Thread t : threads) t.start();
+            for (Thread t : threads) t.join(3000);
+            for (int i = 0; i < threadCount; i++) {
+                assertEquals("Hello, World!", results[i]);
+            }
         });
     }
 

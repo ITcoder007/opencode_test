@@ -3,7 +3,7 @@
 ## Test Execution: HelloTest.java
 
 **Date:** 2026-05-18
-**Iteration:** 4 (feature_python_to_java_20260518051850)
+**Iteration:** 5 (re-verification on main)
 **Status:** ALL TESTS PASSED
 
 ### Summary
@@ -44,11 +44,11 @@
 
 ### Verification Steps
 
-1. Compiled with `javac -encoding UTF-8 Hello.java HelloTest.java` - SUCCESS
+1. Compiled with `javac -encoding UTF-8 -d tmp Hello.java HelloTest.java` - SUCCESS
 2. Ran Python baseline: `python3 hello.py` -> `Hello, World!`
-3. Ran Java: `java Hello` -> `Hello, World!`
+3. Ran Java: `java -cp tmp Hello` -> `Hello, World!`
 4. Diff comparison: identical output
-5. Ran full test suite: `java HelloTest` -> 15/15 PASSED
+5. Ran full test suite: `java -cp tmp HelloTest` -> 15/15 PASSED
 
 ### Conclusion
 

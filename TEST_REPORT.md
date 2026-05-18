@@ -2,8 +2,9 @@
 
 ## Test Execution: HelloTest.java
 
-**Date:** 2026-05-13
-**Iteration:** 3 (dev iteration 2 - main branch)
+**Date:** 2026-05-18
+**Iteration:** 4 (feature branch re-verification)
+**Java Version:** 22.0.2
 **Status:** ALL TESTS PASSED
 
 ### Summary
@@ -47,8 +48,15 @@
 1. Compiled with `javac -encoding UTF-8 Hello.java HelloTest.java` - SUCCESS
 2. Ran Python baseline: `python3 hello.py` -> `Hello, World!`
 3. Ran Java: `java Hello` -> `Hello, World!`
-4. Diff comparison: identical output
+4. Diff comparison: identical output (trim 后精确匹配)
 5. Ran full test suite: `java HelloTest` -> 15/15 PASSED
+
+### Conversion Rules Applied
+
+- `print()` -> `System.out.println()`
+- `def main()` -> `public static void main(String[] args)`
+- `if __name__ == "__main__"` -> 标准 Java main 入口
+- `hello.py` -> `Hello.java` (snake_case -> PascalCase)
 
 ### Conclusion
 

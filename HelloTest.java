@@ -1,7 +1,11 @@
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class HelloTest {
 
@@ -18,6 +22,7 @@ public class HelloTest {
         testClassIsPublic();
         testClassHasMainMethod();
         testMainMethodSignature();
+        testClassHasDefaultConstructor();
 
         System.out.println("\n--- Output Correctness Tests ---");
         testMainOutput();
@@ -26,12 +31,21 @@ public class HelloTest {
         testNoLeadingWhitespace();
         testNoTrailingSpacesBeforeNewline();
         testExactOutputFormat();
+        testOutputIsPureAscii();
+        testOutputLengthConsistency();
 
         System.out.println("\n--- Robustness Tests ---");
         testMainWithNullArgs();
         testMainWithNonEmptyArgs();
         testIdempotency();
         testSingleLineOutput();
+        testConcurrentExecution();
+
+        System.out.println("\n--- Behavioral Contract Tests ---");
+        testMainReturnsNormally();
+        testMainCompletesWithinTimeout();
+        testOutputNotTooLong();
+        testPrintlnProducesPlatformNewline();
 
         System.out.println("\n=== Test Summary ===");
         System.out.println("Total: " + total + " | Passed: " + passed + " | Failed: " + failed);
@@ -86,6 +100,21 @@ public class HelloTest {
         }, NoSuchMethodException.class);
     }
 
+    private static void testClassHasDefaultConstructor() {
+        assertTest("Hello has a default (no-arg) constructor", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            Constructor<?>[] constructors = clazz.getConstructors();
+            boolean hasDefault = false;
+            for (Constructor<?> c : constructors) {
+                if (c.getParameterCount() == 0) {
+                    hasDefault = true;
+                    break;
+                }
+            }
+            assertTrue(hasDefault);
+        }, ClassNotFoundException.class);
+    }
+
     private static void testMainOutput() {
         assertTest("main() outputs 'Hello, World!'", () -> {
             String output = captureMainOutput();
@@ -131,6 +160,23 @@ public class HelloTest {
         });
     }
 
+    private static void testOutputIsPureAscii() {
+        assertTest("Output contains only ASCII characters", () -> {
+            String output = captureMainOutput();
+            byte[] bytes = output.getBytes(StandardCharsets.US_ASCII);
+            String reconstituted = new String(bytes, StandardCharsets.US_ASCII);
+            assertEquals(output, reconstituted);
+        });
+    }
+
+    private static void testOutputLengthConsistency() {
+        assertTest("Output length is consistent across invocations", () -> {
+            String first = captureMainOutput();
+            String second = captureMainOutput();
+            assertEquals(first.length(), second.length());
+        });
+    }
+
     private static void testMainWithNullArgs() {
         assertTest("main() handles null args without crashing", () -> {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -167,6 +213,67 @@ public class HelloTest {
                 ? output.substring(0, output.length() - System.lineSeparator().length())
                 : output;
             assertFalse(withoutTrailingNewline.contains(System.lineSeparator()));
+        });
+    }
+
+    private static void testConcurrentExecution() {
+        assertTest("Concurrent calls to main() do not crash", () -> {
+            int threadCount = 10;
+            CountDownLatch startLatch = new CountDownLatch(1);
+            CountDownLatch doneLatch = new CountDownLatch(threadCount);
+            AtomicInteger errors = new AtomicInteger(0);
+
+            PrintStream originalOut = System.out;
+            System.setOut(new PrintStream(new ByteArrayOutputStream()));
+
+            for (int i = 0; i < threadCount; i++) {
+                new Thread(() -> {
+                    try {
+                        startLatch.await();
+                        Hello.main(new String[]{});
+                    } catch (Exception e) {
+                        errors.incrementAndGet();
+                    } finally {
+                        doneLatch.countDown();
+                    }
+                }).start();
+            }
+
+            startLatch.countDown();
+            doneLatch.await();
+            System.setOut(originalOut);
+
+            assertEquals(0, errors.get());
+        });
+    }
+
+    private static void testMainReturnsNormally() {
+        assertTest("main() returns normally without calling System.exit", () -> {
+            String output = captureMainOutput();
+            assertNotNull(output);
+        });
+    }
+
+    private static void testMainCompletesWithinTimeout() {
+        assertTest("main() completes within 1 second", () -> {
+            long start = System.nanoTime();
+            captureMainOutput();
+            long elapsed = (System.nanoTime() - start) / 1_000_000;
+            assertTrue(elapsed < 1000);
+        });
+    }
+
+    private static void testOutputNotTooLong() {
+        assertTest("Output is not excessively long (sanity check)", () -> {
+            String output = captureMainOutput();
+            assertTrue(output.length() <= 100);
+        });
+    }
+
+    private static void testPrintlnProducesPlatformNewline() {
+        assertTest("println produces platform-appropriate newline", () -> {
+            String output = captureMainOutput();
+            assertTrue(output.contains(System.lineSeparator()));
         });
     }
 

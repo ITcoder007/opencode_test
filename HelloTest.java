@@ -33,6 +33,17 @@ public class HelloTest {
         testIdempotency();
         testSingleLineOutput();
 
+        System.out.println("\n--- Encoding & Byte-Level Tests ---");
+        testOutputByteLength();
+        testOutputCharByChar();
+        testOutputUTF8Bytes();
+        testNoExtraOutputStreams();
+
+        System.out.println("\n--- Reflection & Stability Tests ---");
+        testReflectiveInvocation();
+        testRepeatedReflectiveCalls();
+        testMainReturnTypeVoid();
+
         System.out.println("\n=== Test Summary ===");
         System.out.println("Total: " + total + " | Passed: " + passed + " | Failed: " + failed);
         if (failed == 0) {
@@ -168,6 +179,101 @@ public class HelloTest {
                 : output;
             assertFalse(withoutTrailingNewline.contains(System.lineSeparator()));
         });
+    }
+
+    private static void testOutputByteLength() {
+        assertTest("Output byte length matches expected", () -> {
+            String output = captureMainOutput();
+            String expected = "Hello, World!" + System.lineSeparator();
+            assertEquals(expected.getBytes("UTF-8").length, output.getBytes("UTF-8").length);
+        });
+    }
+
+    private static void testOutputCharByChar() {
+        assertTest("Output matches 'Hello, World!' character by character", () -> {
+            String output = captureMainOutput();
+            String expected = "Hello, World!";
+            for (int i = 0; i < expected.length(); i++) {
+                assertEquals(expected.charAt(i), output.charAt(i));
+            }
+        });
+    }
+
+    private static void testOutputUTF8Bytes() {
+        assertTest("Output UTF-8 bytes are exactly correct", () -> {
+            String output = captureMainOutput();
+            byte[] actual = output.getBytes("UTF-8");
+            byte[] expected = ("Hello, World!" + System.lineSeparator()).getBytes("UTF-8");
+            assertEquals(expected.length, actual.length);
+            for (int i = 0; i < expected.length; i++) {
+                assertEquals(expected[i], actual[i]);
+            }
+        });
+    }
+
+    private static void testNoExtraOutputStreams() {
+        assertTest("No output to System.err", () -> {
+            ByteArrayOutputStream baosErr = new ByteArrayOutputStream();
+            PrintStream originalErr = System.err;
+            PrintStream originalOut = System.out;
+            System.setErr(new PrintStream(baosErr));
+            System.setOut(new PrintStream(new ByteArrayOutputStream()));
+            try {
+                Hello.main(new String[]{});
+            } finally {
+                System.setOut(originalOut);
+                System.setErr(originalErr);
+            }
+            assertEquals(0, baosErr.toString().length());
+        });
+    }
+
+    private static void testReflectiveInvocation() {
+        assertTest("main() can be invoked via reflection", () -> {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            PrintStream originalOut = System.out;
+            System.setOut(new PrintStream(baos));
+            try {
+                Class<?> clazz = Class.forName("Hello");
+                Method main = clazz.getMethod("main", String[].class);
+                main.invoke(null, (Object) new String[]{});
+            } finally {
+                System.setOut(originalOut);
+            }
+            assertEquals("Hello, World!", baos.toString().trim());
+        });
+    }
+
+    private static void testRepeatedReflectiveCalls() {
+        assertTest("Multiple reflective invocations produce consistent output", () -> {
+            String first = invokeMainReflectively();
+            String second = invokeMainReflectively();
+            String third = invokeMainReflectively();
+            assertEquals(first, second);
+            assertEquals(second, third);
+        });
+    }
+
+    private static void testMainReturnTypeVoid() {
+        assertTest("main method return type is void (no return value)", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            Method main = clazz.getMethod("main", String[].class);
+            assertEquals(void.class, main.getReturnType());
+        }, NoSuchMethodException.class);
+    }
+
+    private static String invokeMainReflectively() throws Exception {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PrintStream originalOut = System.out;
+        System.setOut(new PrintStream(baos));
+        try {
+            Class<?> clazz = Class.forName("Hello");
+            Method main = clazz.getMethod("main", String[].class);
+            main.invoke(null, (Object) new String[]{});
+        } finally {
+            System.setOut(originalOut);
+        }
+        return baos.toString();
     }
 
     private static String captureMainOutput() {

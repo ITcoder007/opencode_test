@@ -2,8 +2,8 @@
 
 ## Test Execution: HelloTest.java
 
-**Date:** 2026-05-13
-**Iteration:** 3 (dev iteration 2 - main branch)
+**Date:** 2026-05-19
+**Iteration:** 4 (feature_python_to_java_20260519000239 branch)
 **Status:** ALL TESTS PASSED
 
 ### Summary
@@ -49,6 +49,15 @@
 3. Ran Java: `java Hello` -> `Hello, World!`
 4. Diff comparison: identical output
 5. Ran full test suite: `java HelloTest` -> 15/15 PASSED
+
+### Conversion Mapping
+
+| Python (hello.py) | Java (Hello.java) |
+|---|---|
+| `def main()` | `public static void main(String[] args)` |
+| `print("Hello, World!")` | `System.out.println("Hello, World!")` |
+| `if __name__ == "__main__"` | `public static void main(String[] args)` |
+| snake_case filename `hello.py` | PascalCase class `Hello` |
 
 ### Conclusion
 

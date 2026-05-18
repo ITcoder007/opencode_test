@@ -2,8 +2,8 @@
 
 ## Test Execution: HelloTest.java
 
-**Date:** 2026-05-13
-**Iteration:** 3 (dev iteration 2 - main branch)
+**Date:** 2026-05-18
+**Iteration:** 4 (re-verification on feature_python_to_java_20260518223102)
 **Status:** ALL TESTS PASSED
 
 ### Summary
@@ -47,8 +47,14 @@
 1. Compiled with `javac -encoding UTF-8 Hello.java HelloTest.java` - SUCCESS
 2. Ran Python baseline: `python3 hello.py` -> `Hello, World!`
 3. Ran Java: `java Hello` -> `Hello, World!`
-4. Diff comparison: identical output
+4. Diff comparison: identical output (trim matched)
 5. Ran full test suite: `java HelloTest` -> 15/15 PASSED
+
+### Environment
+
+- Java: 22.0.2 (Oracle JDK)
+- Python: 3.12.11
+- OS: macOS (darwin)
 
 ### Conclusion
 

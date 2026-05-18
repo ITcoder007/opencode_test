@@ -33,6 +33,14 @@ public class HelloTest {
         testIdempotency();
         testSingleLineOutput();
 
+        System.out.println("\n--- Extended Verification Tests ---");
+        testNoStderrOutput();
+        testOutputByteLength();
+        testNoExtraPublicMethods();
+        testSuperclassIsObject();
+        testOutputIsPureAscii();
+        testConcurrentInvocation();
+
         System.out.println("\n=== Test Summary ===");
         System.out.println("Total: " + total + " | Passed: " + passed + " | Failed: " + failed);
         if (failed == 0) {
@@ -184,6 +192,90 @@ public class HelloTest {
             System.setOut(originalOut);
         }
         return baos.toString();
+    }
+
+    private static void testNoStderrOutput() {
+        assertTest("No output to stderr", () -> {
+            PrintStream originalErr = System.err;
+            ByteArrayOutputStream errBaos = new ByteArrayOutputStream();
+            PrintStream capturedErr = new PrintStream(errBaos);
+            System.setErr(capturedErr);
+            ByteArrayOutputStream outBaos = new ByteArrayOutputStream();
+            PrintStream originalOut = System.out;
+            System.setOut(new PrintStream(outBaos));
+            try {
+                Hello.main(new String[]{});
+            } finally {
+                System.setOut(originalOut);
+                System.setErr(originalErr);
+            }
+            assertEquals("", errBaos.toString());
+        });
+    }
+
+    private static void testOutputByteLength() {
+        assertTest("Output byte length is exactly 14 bytes + newline", () -> {
+            String output = captureMainOutput();
+            String content = output.replace(System.lineSeparator(), "");
+            assertEquals(13, content.getBytes("UTF-8").length);
+        });
+    }
+
+    private static void testNoExtraPublicMethods() {
+        assertTest("Class has exactly one public method (main)", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            java.lang.reflect.Method[] methods = clazz.getDeclaredMethods();
+            int publicCount = 0;
+            for (java.lang.reflect.Method m : methods) {
+                if (Modifier.isPublic(m.getModifiers())) {
+                    publicCount++;
+                }
+            }
+            assertEquals(1, publicCount);
+        }, ClassNotFoundException.class);
+    }
+
+    private static void testSuperclassIsObject() {
+        assertTest("Superclass is java.lang.Object", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            assertEquals(Object.class, clazz.getSuperclass());
+        }, ClassNotFoundException.class);
+    }
+
+    private static void testOutputIsPureAscii() {
+        assertTest("Output contains only ASCII characters", () -> {
+            String output = captureMainOutput();
+            for (char c : output.toCharArray()) {
+                assertTrue(c < 128);
+            }
+        });
+    }
+
+    private static void testConcurrentInvocation() {
+        assertTest("Concurrent reflective access to main method is safe", () -> {
+            int threadCount = 10;
+            Thread[] threads = new Thread[threadCount];
+            final boolean[] errors = new boolean[threadCount];
+            for (int i = 0; i < threadCount; i++) {
+                final int idx = i;
+                threads[i] = new Thread(() -> {
+                    try {
+                        Class<?> clazz = Class.forName("Hello");
+                        java.lang.reflect.Method main = clazz.getMethod("main", String[].class);
+                        if (!Modifier.isPublic(main.getModifiers()) || !Modifier.isStatic(main.getModifiers())) {
+                            errors[idx] = true;
+                        }
+                    } catch (Exception e) {
+                        errors[idx] = true;
+                    }
+                });
+            }
+            for (Thread t : threads) t.start();
+            for (Thread t : threads) t.join();
+            for (boolean e : errors) {
+                assertFalse(e);
+            }
+        });
     }
 
     @FunctionalInterface

@@ -1,0 +1,16 @@
+Picked up JAVA_TOOL_OPTIONS: -javaagent:/Users/gengjiaxing/.m2/repository/org/projectlombok/lombok/1.18.34/lombok-1.18.34.jar
+=== HelloTestExtended - Extended Unit Tests ===
+
+--- Reflection & Structural Tests ---
+  PASS: main can be invoked via reflection
+  PASS: Hello has a public default constructor
+  PASS: Hello declares exactly one method (main)
+  PASS: main method returns void (confirmed via reflection)
+
+--- Byte-Level & Encoding Tests ---
+  PASS: Output byte content matches expected ASCII bytes
+  PASS: Output is valid UTF-8 and pure ASCII
+  PASS: Output has exactly 14 characters including newline
+  PASS: Output contains no null (0x00) bytes
+
+--- Concurrency & Repeated Execution Tests ---

@@ -21,6 +21,10 @@ venv/
 logs/
 *.log
 
+# Java
+*.class
+target/
+
 # Build
 dist/
 build/

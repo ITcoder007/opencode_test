@@ -33,6 +33,16 @@ public class HelloTest {
         testIdempotency();
         testSingleLineOutput();
 
+        System.out.println("\n--- Boundary & Edge Case Tests ---");
+        testOutputIsPureAscii();
+        testOutputLengthExact();
+        testRepeatedCallConsistency();
+        testReflectiveMainInvocation();
+        testMainWithEmptyStringArray();
+        testNoExtraPublicMethods();
+        testOutputContainsCommaAndSpace();
+        testMainWithSingleArg();
+
         System.out.println("\n=== Test Summary ===");
         System.out.println("Total: " + total + " | Passed: " + passed + " | Failed: " + failed);
         if (failed == 0) {
@@ -167,6 +177,86 @@ public class HelloTest {
                 ? output.substring(0, output.length() - System.lineSeparator().length())
                 : output;
             assertFalse(withoutTrailingNewline.contains(System.lineSeparator()));
+        });
+    }
+
+    private static void testOutputIsPureAscii() {
+        assertTest("Output contains only ASCII characters", () -> {
+            String output = captureMainOutput();
+            String content = output.replace(System.lineSeparator(), "");
+            for (char c : content.toCharArray()) {
+                assertTrue(c < 128);
+            }
+        });
+    }
+
+    private static void testOutputLengthExact() {
+        assertTest("Output content is exactly 13 characters long", () -> {
+            String output = captureMainOutput();
+            String content = output.replace(System.lineSeparator(), "");
+            assertEquals(13, content.length());
+        });
+    }
+
+    private static void testRepeatedCallConsistency() {
+        assertTest("50 consecutive calls produce identical output", () -> {
+            String first = captureMainOutput();
+            for (int i = 0; i < 50; i++) {
+                String output = captureMainOutput();
+                assertEquals(first, output);
+            }
+        });
+    }
+
+    private static void testReflectiveMainInvocation() {
+        assertTest("main() can be invoked via reflection", () -> {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            PrintStream originalOut = System.out;
+            System.setOut(new PrintStream(baos));
+            try {
+                Method main = Hello.class.getMethod("main", String[].class);
+                main.invoke(null, (Object) new String[]{});
+            } finally {
+                System.setOut(originalOut);
+            }
+            assertEquals("Hello, World!", baos.toString().trim());
+        });
+    }
+
+    private static void testMainWithEmptyStringArray() {
+        assertTest("main() works with empty String array (new String[0])", () -> {
+            String output = captureMainOutputWithArgs(new String[0]);
+            assertEquals("Hello, World!", output.trim());
+        });
+    }
+
+    private static void testNoExtraPublicMethods() {
+        assertTest("Hello class has only 'main' as public static method", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            Method[] methods = clazz.getDeclaredMethods();
+            int publicStaticCount = 0;
+            for (Method m : methods) {
+                int mod = m.getModifiers();
+                if (Modifier.isPublic(mod) && Modifier.isStatic(mod)) {
+                    publicStaticCount++;
+                    assertEquals("main", m.getName());
+                }
+            }
+            assertEquals(1, publicStaticCount);
+        }, ClassNotFoundException.class);
+    }
+
+    private static void testOutputContainsCommaAndSpace() {
+        assertTest("Output contains ', ' (comma-space) between Hello and World", () -> {
+            String output = captureMainOutput();
+            assertTrue(output.contains(", "));
+        });
+    }
+
+    private static void testMainWithSingleArg() {
+        assertTest("main() with single argument produces correct output", () -> {
+            String output = captureMainOutputWithArgs(new String[]{"test"});
+            assertEquals("Hello, World!", output.trim());
         });
     }
 

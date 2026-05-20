@@ -3,7 +3,7 @@
 ## Test Execution: HelloTest.java
 
 **Date:** 2026-05-20
-**Iteration:** 5 (S1 - 验证创建)
+**Iteration:** 6 (dev iteration 1 - code commit pushed, re-verified)
 **Status:** ALL TESTS PASSED
 
 ### Summary

@@ -33,6 +33,13 @@ public class HelloTest {
         testIdempotency();
         testSingleLineOutput();
 
+        System.out.println("\n--- Extended Coverage Tests ---");
+        testClassNotAbstract();
+        testClassNotFinal();
+        testOutputContainsSubstringHello();
+        testOutputContainsSubstringWorld();
+        testOutputLength();
+
         System.out.println("\n=== Test Summary ===");
         System.out.println("Total: " + total + " | Passed: " + passed + " | Failed: " + failed);
         if (failed == 0) {
@@ -167,6 +174,42 @@ public class HelloTest {
                 ? output.substring(0, output.length() - System.lineSeparator().length())
                 : output;
             assertFalse(withoutTrailingNewline.contains(System.lineSeparator()));
+        });
+    }
+
+    private static void testClassNotAbstract() {
+        assertTest("Hello class is not abstract", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            assertFalse(Modifier.isAbstract(clazz.getModifiers()));
+        }, ClassNotFoundException.class);
+    }
+
+    private static void testClassNotFinal() {
+        assertTest("Hello class is not final", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            assertFalse(Modifier.isFinal(clazz.getModifiers()));
+        }, ClassNotFoundException.class);
+    }
+
+    private static void testOutputContainsSubstringHello() {
+        assertTest("Output contains substring 'Hello'", () -> {
+            String output = captureMainOutput();
+            assertTrue(output.contains("Hello"));
+        });
+    }
+
+    private static void testOutputContainsSubstringWorld() {
+        assertTest("Output contains substring 'World'", () -> {
+            String output = captureMainOutput();
+            assertTrue(output.contains("World"));
+        });
+    }
+
+    private static void testOutputLength() {
+        assertTest("Output length equals 'Hello, World!' + lineSeparator length", () -> {
+            String output = captureMainOutput();
+            int expectedLen = "Hello, World!".length() + System.lineSeparator().length();
+            assertEquals(expectedLen, output.length());
         });
     }
 

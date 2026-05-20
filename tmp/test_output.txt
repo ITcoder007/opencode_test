@@ -1,0 +1,7 @@
+Picked up JAVA_TOOL_OPTIONS: -javaagent:/Users/gengjiaxing/.m2/repository/org/projectlombok/lombok/1.18.34/lombok-1.18.34.jar
+JUnit version 4.13.2
+........
+Time: 0.006
+
+OK (8 tests)
+

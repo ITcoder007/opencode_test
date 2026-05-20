@@ -84,3 +84,38 @@ The Java conversion of `hello.py` to `Hello.java` is verified correct. All struc
 ### Final Verdict
 
 **ACCEPTED** - The Python-to-Java conversion of `hello.py` to `Hello.java` passes all end-to-end acceptance criteria. The converted Java code compiles cleanly, produces identical output to the Python source, and passes all 15 structural/output/robustness tests.
+
+---
+
+## 测试阶段独立验证 (Test Phase)
+
+**日期:** 2026-05-21
+**环境:** macOS, JDK 22.0.2, Python 3.12.11
+**状态:** ALL TESTS PASSED
+
+### 验证步骤
+
+1. 清理旧编译产物 (`rm -f Hello.class HelloTest.class`)
+2. 重新编译 `javac -encoding UTF-8 Hello.java HelloTest.java` — 成功
+3. 运行 Python 基线 `python3 hello.py` — 输出 `Hello, World!`
+4. 运行 Java `java Hello` — 输出 `Hello, World!`
+5. `diff` 对比 Python 与 Java 输出 — 完全一致 (exit 0)
+6. 运行完整测试套件 `java HelloTest` — **15/15 PASSED**
+
+### 测试结果
+
+| 分类 | 测试数 | 通过 | 失败 |
+|------|--------|------|------|
+| 基本结构测试 | 5 | 5 | 0 |
+| 输出正确性测试 | 6 | 6 | 0 |
+| 健壮性测试 | 4 | 4 | 0 |
+| **合计** | **15** | **15** | **0** |
+
+### 覆盖率评估
+
+源文件 `Hello.java` 仅包含一个 `println` 语句，逻辑极简。现有 15 个测试已完整覆盖：
+- 类结构（访问修饰符、类名、方法签名）
+- 输出内容（精确匹配、与 Python 一致性、换行符处理）
+- 健壮性（null 参数、多余参数、幂等性、单行输出）
+
+**结论：** 无需补充额外测试，当前覆盖已充分且完整。

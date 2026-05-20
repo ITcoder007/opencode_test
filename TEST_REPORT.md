@@ -2,8 +2,8 @@
 
 ## Test Execution: HelloTest.java
 
-**Date:** 2026-05-13
-**Iteration:** 3 (dev iteration 2 - main branch)
+**Date:** 2026-05-20
+**Iteration:** 4 (dev iteration 1 - cluster deployment task 1)
 **Status:** ALL TESTS PASSED
 
 ### Summary
@@ -47,9 +47,9 @@
 1. Compiled with `javac -encoding UTF-8 Hello.java HelloTest.java` - SUCCESS
 2. Ran Python baseline: `python3 hello.py` -> `Hello, World!`
 3. Ran Java: `java Hello` -> `Hello, World!`
-4. Diff comparison: identical output
+4. Diff comparison: identical output (exit code 0)
 5. Ran full test suite: `java HelloTest` -> 15/15 PASSED
 
 ### Conclusion
 
-The Java conversion of `hello.py` to `Hello.java` is verified correct. All structural, output, and robustness tests pass.
+The Java conversion of `hello.py` to `Hello.java` is verified correct. All structural, output, and robustness tests pass. Results pushed to output repository.

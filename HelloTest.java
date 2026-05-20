@@ -1,13 +1,23 @@
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class HelloTest {
 
     private static int passed = 0;
     private static int failed = 0;
     private static int total = 0;
+    private static final List<String> failures = Collections.synchronizedList(new ArrayList<>());
 
     public static void main(String[] args) {
         System.out.println("=== HelloTest - Unit Tests for Hello.java ===\n");
@@ -33,8 +43,32 @@ public class HelloTest {
         testIdempotency();
         testSingleLineOutput();
 
+        System.out.println("\n--- Class Integrity Tests ---");
+        testClassIsNotAbstract();
+        testClassIsNotEnum();
+        testClassIsNotInterface();
+        testClassHasDefaultConstructor();
+        testNoExtraPublicMethods();
+        testClassHasNoFields();
+
+        System.out.println("\n--- Encoding & Byte-Level Tests ---");
+        testOutputIsUTF8Compatible();
+        testOutputByteContent();
+        testOutputContainsOnlyASCII();
+
+        System.out.println("\n--- Concurrency & Edge Case Tests ---");
+        testConcurrentExecution();
+        testMainWithEmptyStringArg();
+        testMainDoesNotCallSystemExit();
+
         System.out.println("\n=== Test Summary ===");
         System.out.println("Total: " + total + " | Passed: " + passed + " | Failed: " + failed);
+        if (failed > 0) {
+            System.out.println("\nFailed tests:");
+            for (String f : failures) {
+                System.out.println("  - " + f);
+            }
+        }
         if (failed == 0) {
             System.out.println("Result: ALL TESTS PASSED");
         } else {
@@ -170,6 +204,147 @@ public class HelloTest {
         });
     }
 
+    private static void testClassIsNotAbstract() {
+        assertTest("Hello class is not abstract", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            assertFalse(Modifier.isAbstract(clazz.getModifiers()));
+        }, ClassNotFoundException.class);
+    }
+
+    private static void testClassIsNotEnum() {
+        assertTest("Hello class is not an enum", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            assertFalse(clazz.isEnum());
+        }, ClassNotFoundException.class);
+    }
+
+    private static void testClassIsNotInterface() {
+        assertTest("Hello class is not an interface", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            assertFalse(clazz.isInterface());
+        }, ClassNotFoundException.class);
+    }
+
+    private static void testClassHasDefaultConstructor() {
+        assertTest("Hello has a public default constructor", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            Constructor<?>[] constructors = clazz.getConstructors();
+            assertTrue(constructors.length >= 1);
+            boolean hasDefault = false;
+            for (Constructor<?> c : constructors) {
+                if (c.getParameterCount() == 0 && Modifier.isPublic(c.getModifiers())) {
+                    hasDefault = true;
+                    break;
+                }
+            }
+            assertTrue(hasDefault);
+        }, ClassNotFoundException.class);
+    }
+
+    private static void testNoExtraPublicMethods() {
+        assertTest("Hello has only 'main' as declared public static method", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            Method[] methods = clazz.getDeclaredMethods();
+            int publicStaticCount = 0;
+            for (Method m : methods) {
+                int mod = m.getModifiers();
+                if (Modifier.isPublic(mod) && Modifier.isStatic(mod)) {
+                    publicStaticCount++;
+                    assertEquals("main", m.getName());
+                }
+            }
+            assertEquals(1, publicStaticCount);
+        }, ClassNotFoundException.class);
+    }
+
+    private static void testClassHasNoFields() {
+        assertTest("Hello class has no declared fields (pure function)", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            assertEquals(0, clazz.getDeclaredFields().length);
+        }, ClassNotFoundException.class);
+    }
+
+    private static void testOutputIsUTF8Compatible() {
+        assertTest("Output bytes are valid UTF-8", () -> {
+            String output = captureMainOutput();
+            byte[] bytes = output.getBytes(StandardCharsets.UTF_8);
+            String decoded = new String(bytes, StandardCharsets.UTF_8);
+            assertEquals(output, decoded);
+        });
+    }
+
+    private static void testOutputByteContent() {
+        assertTest("Output byte content matches expected", () -> {
+            String output = captureMainOutput();
+            byte[] bytes = output.getBytes(StandardCharsets.UTF_8);
+            String expected = "Hello, World!" + System.lineSeparator();
+            byte[] expectedBytes = expected.getBytes(StandardCharsets.UTF_8);
+            assertEquals(expectedBytes.length, bytes.length);
+            for (int i = 0; i < bytes.length; i++) {
+                assertEquals(expectedBytes[i], bytes[i]);
+            }
+        });
+    }
+
+    private static void testOutputContainsOnlyASCII() {
+        assertTest("Output contains only ASCII characters", () -> {
+            String output = captureMainOutput();
+            for (char c : output.toCharArray()) {
+                assertTrue(c < 128);
+            }
+        });
+    }
+
+    private static void testConcurrentExecution() {
+        assertTest("Concurrent calls to main() do not throw exceptions", () -> {
+            int threadCount = 10;
+            ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+            CountDownLatch latch = new CountDownLatch(threadCount);
+            List<Throwable> errors = Collections.synchronizedList(new ArrayList<>());
+            ByteArrayOutputStream sharedBaos = new ByteArrayOutputStream();
+            PrintStream sharedPs = new PrintStream(sharedBaos);
+            PrintStream originalOut = System.out;
+            System.setOut(sharedPs);
+            try {
+                for (int i = 0; i < threadCount; i++) {
+                    executor.submit(() -> {
+                        try {
+                            latch.countDown();
+                            latch.await(5, TimeUnit.SECONDS);
+                            Hello.main(new String[]{});
+                        } catch (Throwable t) {
+                            errors.add(t);
+                        }
+                    });
+                }
+                executor.shutdown();
+                assertTrue(executor.awaitTermination(10, TimeUnit.SECONDS));
+            } finally {
+                System.setOut(originalOut);
+            }
+            assertTrue(errors.isEmpty());
+            String combinedOutput = sharedBaos.toString().trim();
+            String[] lines = combinedOutput.split(System.lineSeparator());
+            assertEquals(threadCount, lines.length);
+            for (String line : lines) {
+                assertEquals("Hello, World!", line.trim());
+            }
+        });
+    }
+
+    private static void testMainWithEmptyStringArg() {
+        assertTest("main() handles empty string in args array", () -> {
+            String output = captureMainOutputWithArgs(new String[]{""});
+            assertEquals("Hello, World!", output.trim());
+        });
+    }
+
+    private static void testMainDoesNotCallSystemExit() {
+        assertTest("main() does not call System.exit", () -> {
+            captureMainOutput();
+        });
+    }
+
     private static String captureMainOutput() {
         return captureMainOutputWithArgs(new String[]{});
     }
@@ -203,13 +378,14 @@ public class HelloTest {
             System.out.println("  PASS: " + name);
         } catch (AssertionError e) {
             failed++;
+            failures.add(name);
             System.out.println("  FAIL: " + name + " - " + e.getMessage());
         } catch (Exception e) {
+            failed++;
+            failures.add(name);
             if (allowed != null && allowed.isInstance(e)) {
-                failed++;
                 System.out.println("  FAIL: " + name + " - Expected no exception but got: " + e.getClass().getSimpleName() + ": " + e.getMessage());
             } else {
-                failed++;
                 System.out.println("  FAIL: " + name + " - Exception: " + e.getClass().getSimpleName() + ": " + e.getMessage());
             }
         }

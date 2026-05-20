@@ -1,0 +1,38 @@
+Picked up JAVA_TOOL_OPTIONS: 
+=== HelloTest - Unit Tests for Hello.java ===
+
+--- Basic Structure Tests ---
+  PASS: Hello class exists and can be loaded
+  PASS: Class is named 'Hello'
+  PASS: Hello class is public
+  PASS: Hello has a main method
+  PASS: main method is public static void with String[] param
+
+--- Output Correctness Tests ---
+  PASS: main() outputs 'Hello, World!'
+  PASS: Java output matches Python print('Hello, World!') output
+  PASS: Output ends with system newline (matches println behavior)
+  PASS: Output has no leading whitespace
+  PASS: No trailing spaces before newline
+  PASS: Exact output is 'Hello, World!' + newline
+
+--- Robustness Tests ---
+  PASS: main() handles null args without crashing
+  PASS: main() ignores extra arguments gracefully
+  PASS: Running main() twice produces identical output
+  PASS: Output is exactly one line
+
+--- Class Integrity Tests ---
+  PASS: Hello class is not abstract
+  PASS: Hello class is not an enum
+  PASS: Hello class is not an interface
+  PASS: Hello has a public default constructor
+  PASS: Hello has only 'main' as declared public static method
+  PASS: Hello class has no declared fields (pure function)
+
+--- Encoding & Byte-Level Tests ---
+  PASS: Output bytes are valid UTF-8
+  PASS: Output byte content matches expected
+  PASS: Output contains only ASCII characters
+
+--- Concurrency & Edge Case Tests ---

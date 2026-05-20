@@ -58,7 +58,7 @@ The Java conversion of `hello.py` to `Hello.java` is verified correct. All struc
 
 ## S10 - End-to-End Acceptance Verification
 
-**Date:** 2026-05-20
+**Date:** 2026-05-21
 **Environment:** macOS, JDK 22.0.2, Python 3.12.11
 **Status:** ACCEPTED
 
@@ -84,3 +84,27 @@ The Java conversion of `hello.py` to `Hello.java` is verified correct. All struc
 ### Final Verdict
 
 **ACCEPTED** - The Python-to-Java conversion of `hello.py` to `Hello.java` passes all end-to-end acceptance criteria. The converted Java code compiles cleanly, produces identical output to the Python source, and passes all 15 structural/output/robustness tests.
+
+---
+
+## TC1.2 - Re-verification (2026-05-21)
+
+**Date:** 2026-05-21
+**Branch:** feature_python_to_java_TC1_2_20260521022940
+**Environment:** macOS, JDK 22.0.2, Python 3.12.11
+**Status:** ACCEPTED
+
+### Verification Steps
+
+1. `python3 hello.py` -> `Hello, World!` (exit 0)
+2. `javac -encoding UTF-8 Hello.java` -> compile success (exit 0)
+3. `java Hello` -> `Hello, World!` (exit 0)
+4. `diff` Python vs Java output: IDENTICAL (exit 0)
+5. `javac -encoding UTF-8 Hello.java HelloTest.java` -> compile success (exit 0)
+6. `java HelloTest` -> 15/15 PASSED (exit 0)
+
+### Test Results
+
+- Total: 15
+- Passed: 15
+- Failed: 0

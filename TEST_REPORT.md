@@ -2,8 +2,8 @@
 
 ## Test Execution: HelloTest.java
 
-**Date:** 2026-05-20
-**Iteration:** test-1 (test phase re-verification, 15/15 passed)
+**Date:** 2026-05-21
+**Iteration:** test phase re-verification after dev commit 836242d7
 **Status:** ALL TESTS PASSED
 
 ### Summary
@@ -52,13 +52,13 @@
 
 ### Conclusion
 
-The Java conversion of `hello.py` to `Hello.java` is verified correct. All structural, output, and robustness tests pass. Results pushed to output repository.
+The Java conversion of `hello.py` to `Hello.java` is verified correct. All structural, output, and robustness tests pass. The latest dev commit (836242d7) only changed the repo submodule pointer; no source code was modified.
 
 ---
 
 ## S10 - End-to-End Acceptance Verification
 
-**Date:** 2026-05-20
+**Date:** 2026-05-21
 **Environment:** macOS, JDK 22.0.2, Python 3.12.11
 **Status:** ACCEPTED
 

@@ -2,6 +2,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Field;
+import java.lang.reflect.Constructor;
+import java.nio.charset.StandardCharsets;
 
 public class HelloTest {
 
@@ -32,6 +35,27 @@ public class HelloTest {
         testMainWithNonEmptyArgs();
         testIdempotency();
         testSingleLineOutput();
+
+        System.out.println("\n--- Extended Structural Tests ---");
+        testClassHasDefaultConstructor();
+        testClassHasNoDeclaredFields();
+        testClassHasOnlyMainMethod();
+        testMainMethodReturnType();
+
+        System.out.println("\n--- Extended Output Tests ---");
+        testOutputByteLength();
+        testOutputCharsetIsUTF8();
+        testOutputContainsHelloWorld();
+        testOutputCharacterByCharacter();
+        testOutputHasNoTabs();
+        testOutputHasNoCarriageReturn();
+        testOutputIsNotNullOrEmpty();
+        testMultipleSequentialInvocations();
+        testStderrRemainsEmpty();
+        testOutputMatchesPythonExactly();
+
+        System.out.println("\n--- Thread Safety Tests ---");
+        testConcurrentInvocations();
 
         System.out.println("\n=== Test Summary ===");
         System.out.println("Total: " + total + " | Passed: " + passed + " | Failed: " + failed);
@@ -167,6 +191,180 @@ public class HelloTest {
                 ? output.substring(0, output.length() - System.lineSeparator().length())
                 : output;
             assertFalse(withoutTrailingNewline.contains(System.lineSeparator()));
+        });
+    }
+
+    private static void testClassHasDefaultConstructor() {
+        assertTest("Hello class has a default (no-arg) constructor", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            Constructor<?>[] constructors = clazz.getDeclaredConstructors();
+            boolean hasDefault = false;
+            for (Constructor<?> c : constructors) {
+                if (c.getParameterCount() == 0) {
+                    hasDefault = true;
+                    break;
+                }
+            }
+            assertTrue(hasDefault || constructors.length == 0);
+        }, ClassNotFoundException.class);
+    }
+
+    private static void testClassHasNoDeclaredFields() {
+        assertTest("Hello class has no declared instance fields", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            Field[] fields = clazz.getDeclaredFields();
+            assertEquals(0, fields.length);
+        }, ClassNotFoundException.class);
+    }
+
+    private static void testClassHasOnlyMainMethod() {
+        assertTest("Hello class has only the main method (no extra public methods)", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            Method[] methods = clazz.getDeclaredMethods();
+            assertEquals(1, methods.length);
+            assertEquals("main", methods[0].getName());
+        }, ClassNotFoundException.class);
+    }
+
+    private static void testMainMethodReturnType() {
+        assertTest("main method returns void (not a value-producing method)", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            Method main = clazz.getMethod("main", String[].class);
+            assertEquals(void.class, main.getReturnType());
+        }, NoSuchMethodException.class);
+    }
+
+    private static void testOutputByteLength() {
+        assertTest("Output byte length matches 'Hello, World!' + newline", () -> {
+            String output = captureMainOutput();
+            byte[] bytes = output.getBytes(StandardCharsets.UTF_8);
+            int expectedLen = "Hello, World!".getBytes(StandardCharsets.UTF_8).length
+                    + System.lineSeparator().getBytes(StandardCharsets.UTF_8).length;
+            assertEquals(expectedLen, bytes.length);
+        });
+    }
+
+    private static void testOutputCharsetIsUTF8() {
+        assertTest("Output is valid UTF-8 encoded", () -> {
+            String output = captureMainOutput();
+            byte[] bytes = output.getBytes(StandardCharsets.UTF_8);
+            String reconstructed = new String(bytes, StandardCharsets.UTF_8);
+            assertEquals(output, reconstructed);
+        });
+    }
+
+    private static void testOutputContainsHelloWorld() {
+        assertTest("Output contains substring 'Hello, World!'", () -> {
+            String output = captureMainOutput();
+            assertTrue(output.contains("Hello, World!"));
+        });
+    }
+
+    private static void testOutputCharacterByCharacter() {
+        assertTest("Output content matches 'Hello, World!' character by character", () -> {
+            String output = captureMainOutput().replace(System.lineSeparator(), "");
+            String expected = "Hello, World!";
+            assertEquals(expected.length(), output.length());
+            for (int i = 0; i < expected.length(); i++) {
+                assertEquals(expected.charAt(i), output.charAt(i));
+            }
+        });
+    }
+
+    private static void testOutputHasNoTabs() {
+        assertTest("Output contains no tab characters", () -> {
+            String output = captureMainOutput();
+            assertFalse(output.contains("\t"));
+        });
+    }
+
+    private static void testOutputHasNoCarriageReturn() {
+        assertTest("Output content has no standalone carriage return characters", () -> {
+            String output = captureMainOutput();
+            String content = output.replace(System.lineSeparator(), "");
+            assertFalse(content.contains("\r"));
+        });
+    }
+
+    private static void testOutputIsNotNullOrEmpty() {
+        assertTest("Output is not null and not empty", () -> {
+            String output = captureMainOutput();
+            assertNotNull(output);
+            assertTrue(output.length() > 0);
+        });
+    }
+
+    private static void testMultipleSequentialInvocations() {
+        assertTest("Running main() 10 times produces identical output each time", () -> {
+            String first = captureMainOutput();
+            for (int i = 0; i < 9; i++) {
+                String subsequent = captureMainOutput();
+                assertEquals(first, subsequent);
+            }
+        });
+    }
+
+    private static void testStderrRemainsEmpty() {
+        assertTest("main() produces no output on stderr", () -> {
+            PrintStream originalErr = System.err;
+            ByteArrayOutputStream errBaos = new ByteArrayOutputStream();
+            PrintStream errCapture = new PrintStream(errBaos);
+            PrintStream originalOut = System.out;
+            ByteArrayOutputStream outBaos = new ByteArrayOutputStream();
+            System.setOut(new PrintStream(outBaos));
+            System.setErr(errCapture);
+            try {
+                Hello.main(new String[]{});
+            } finally {
+                System.setOut(originalOut);
+                System.setErr(originalErr);
+            }
+            String stderr = errBaos.toString();
+            assertEquals(0, stderr.length());
+        });
+    }
+
+    private static void testOutputMatchesPythonExactly() {
+        assertTest("Java output exactly matches Python print output (byte-level)", () -> {
+            String javaOutput = captureMainOutput();
+            String pythonExpected = "Hello, World!" + System.lineSeparator();
+            assertEquals(pythonExpected, javaOutput);
+        });
+    }
+
+    private static void testConcurrentInvocations() {
+        assertTest("Concurrent invocations from multiple threads all produce correct output", () -> {
+            int threadCount = 5;
+            Thread[] threads = new Thread[threadCount];
+            String[] results = new String[threadCount];
+            boolean[] errors = new boolean[threadCount];
+
+            for (int i = 0; i < threadCount; i++) {
+                final int index = i;
+                threads[i] = new Thread(() -> {
+                    try {
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        PrintStream originalOut = System.out;
+                        System.setOut(new PrintStream(baos));
+                        try {
+                            Hello.main(new String[]{});
+                        } finally {
+                            System.setOut(originalOut);
+                        }
+                        results[index] = baos.toString().trim();
+                    } catch (Exception e) {
+                        errors[index] = true;
+                    }
+                });
+            }
+
+            for (Thread t : threads) t.start();
+            for (Thread t : threads) t.join(5000);
+
+            for (int i = 0; i < threadCount; i++) {
+                assertFalse(errors[i]);
+                assertEquals("Hello, World!", results[i]);
+            }
         });
     }
 

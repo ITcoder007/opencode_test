@@ -85,3 +85,66 @@ The Java conversion of `hello.py` to `Hello.java` is verified correct. All struc
 ### Final Verdict
 
 **ACCEPTED** - The Python-to-Java conversion of `hello.py` to `Hello.java` passes all end-to-end acceptance criteria.
+
+---
+
+## Extended Test Suite: HelloExtendedTest.java
+
+**Date:** 2026-05-21
+**Environment:** macOS, JDK 22.0.2
+**Status:** ALL EXTENDED TESTS PASSED (14/14)
+
+### Summary
+
+- Total: 14
+- Passed: 14
+- Failed: 0
+
+### Structural Integrity Tests (5)
+
+| Test | Result |
+|------|--------|
+| Hello has exactly one declared public static method (main) | PASS |
+| No extra public methods beyond main() | PASS |
+| Hello has an accessible default constructor | PASS |
+| Hello class is not final (can be extended) | PASS |
+| Hello does not implement any interfaces (plain class) | PASS |
+
+### Output Encoding & Byte-Level Tests (4)
+
+| Test | Result |
+|------|--------|
+| Output bytes are valid UTF-8 | PASS |
+| Output byte count matches expected: 'Hello, World!' + newline | PASS |
+| Output contains exact ASCII characters: H,e,l,l,o,,, ,W,o,r,l,d,! | PASS |
+| Output does not contain BOM (Byte Order Mark) | PASS |
+
+### Stderr & Side-Effect Tests (3)
+
+| Test | Result |
+|------|--------|
+| stderr is empty after main() execution | PASS |
+| main() does not consume stdin | PASS |
+| main() returns normally (no exception, no early termination) | PASS |
+
+### Performance Baseline Tests (1)
+
+| Test | Result |
+|------|--------|
+| main() completes within 1 second | PASS |
+
+### E2E Diff Verification (1)
+
+| Test | Result |
+|------|--------|
+| Java output byte-for-byte matches Python output | PASS |
+
+---
+
+## Combined Test Results Summary
+
+| Suite | Total | Passed | Failed |
+|-------|-------|--------|--------|
+| HelloTest (original) | 15 | 15 | 0 |
+| HelloExtendedTest (supplementary) | 14 | 14 | 0 |
+| **Combined** | **29** | **29** | **0** |

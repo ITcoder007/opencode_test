@@ -1,0 +1,33 @@
+=== HelloTestExtended - Extended Unit Tests ===
+
+--- Reflection & Metadata Tests ---
+  PASS: Class is in default (unnamed) package
+  PASS: Class has a default no-arg constructor
+  PASS: Class is not abstract
+  PASS: Class is not final
+  PASS: Class is not an enum
+  PASS: Class is not an interface
+  PASS: Class directly extends Object
+  PASS: Class has exactly one declared public method (main)
+  PASS: Class has no declared fields
+  PASS: main method returns void
+
+--- Encoding & Charset Tests ---
+  PASS: Output is valid UTF-8
+  PASS: Output content (excluding newline) is pure ASCII
+  PASS: Raw output bytes match expected 'Hello, World!' bytes
+  PASS: Output (including newline) has correct length
+  PASS: Output content is exactly 13 characters
+
+--- Boundary & Edge Case Tests ---
+  PASS: main() works with empty string array
+  PASS: main() works with array containing single empty string
+  PASS: main() works with 1000-element args array
+  PASS: main() called 100 times produces consistent output
+  PASS: Output does not contain tab character
+  PASS: Output does not contain standalone carriage return
+  PASS: Output is deterministic across sequential runs
+
+--- Behavior Consistency Tests ---
+  PASS: System.out is restored after main() call
+  PASS: System.out is restored even when test framework redirects

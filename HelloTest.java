@@ -1,7 +1,9 @@
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.nio.charset.StandardCharsets;
 
 public class HelloTest {
 
@@ -32,6 +34,15 @@ public class HelloTest {
         testMainWithNonEmptyArgs();
         testIdempotency();
         testSingleLineOutput();
+
+        System.out.println("\n--- Purity & Structural Completeness Tests ---");
+        testNoErrorOutput();
+        testNoPublicFields();
+        testClassHasExactlyOneMethod();
+        testOutputIsPureAscii();
+        testMainWithLargeArgsArray();
+        testOutputByteLength();
+        testMultipleRunsConsistency();
 
         System.out.println("\n=== Test Summary ===");
         System.out.println("Total: " + total + " | Passed: " + passed + " | Failed: " + failed);
@@ -167,6 +178,78 @@ public class HelloTest {
                 ? output.substring(0, output.length() - System.lineSeparator().length())
                 : output;
             assertFalse(withoutTrailingNewline.contains(System.lineSeparator()));
+        });
+    }
+
+    private static void testNoErrorOutput() {
+        assertTest("main() produces no output to System.err", () -> {
+            ByteArrayOutputStream errBaos = new ByteArrayOutputStream();
+            PrintStream originalErr = System.err;
+            System.setErr(new PrintStream(errBaos));
+            try {
+                Hello.main(new String[]{});
+            } finally {
+                System.setErr(originalErr);
+            }
+            assertEquals("", errBaos.toString());
+        });
+    }
+
+    private static void testNoPublicFields() {
+        assertTest("Hello class has no public fields (only main method)", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            Field[] publicFields = clazz.getFields();
+            assertEquals(0, publicFields.length);
+        }, ClassNotFoundException.class);
+    }
+
+    private static void testClassHasExactlyOneMethod() {
+        assertTest("Hello class declares exactly one method (main)", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            Method[] methods = clazz.getDeclaredMethods();
+            assertEquals(1, methods.length);
+            assertEquals("main", methods[0].getName());
+        }, ClassNotFoundException.class);
+    }
+
+    private static void testOutputIsPureAscii() {
+        assertTest("Output contains only ASCII characters", () -> {
+            String output = captureMainOutput();
+            byte[] bytes = output.getBytes(StandardCharsets.UTF_8);
+            for (byte b : bytes) {
+                assertTrue((b & 0xFF) <= 127);
+            }
+        });
+    }
+
+    private static void testMainWithLargeArgsArray() {
+        assertTest("main() handles large args array (100 elements) without error", () -> {
+            String[] largeArgs = new String[100];
+            for (int i = 0; i < 100; i++) {
+                largeArgs[i] = "arg" + i;
+            }
+            String output = captureMainOutputWithArgs(largeArgs);
+            assertEquals("Hello, World!", output.trim());
+        });
+    }
+
+    private static void testOutputByteLength() {
+        assertTest("Output byte length matches expected ('Hello, World!' + newline)", () -> {
+            String output = captureMainOutput();
+            byte[] bytes = output.getBytes(StandardCharsets.UTF_8);
+            int expectedLen = "Hello, World!".getBytes(StandardCharsets.UTF_8).length
+                    + System.lineSeparator().getBytes(StandardCharsets.UTF_8).length;
+            assertEquals(expectedLen, bytes.length);
+        });
+    }
+
+    private static void testMultipleRunsConsistency() {
+        assertTest("Running main() 10 times produces identical output each time", () -> {
+            String reference = captureMainOutput();
+            for (int i = 0; i < 9; i++) {
+                String output = captureMainOutput();
+                assertEquals(reference, output);
+            }
         });
     }
 

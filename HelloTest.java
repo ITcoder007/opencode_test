@@ -30,8 +30,15 @@ public class HelloTest {
         System.out.println("\n--- Robustness Tests ---");
         testMainWithNullArgs();
         testMainWithNonEmptyArgs();
+        testMainWithEmptyStringArg();
         testIdempotency();
         testSingleLineOutput();
+        testOutputIsNotEmpty();
+
+        System.out.println("\n--- Class Integrity Tests ---");
+        testClassHasNoDeclaredFields();
+        testClassHasExactlyOneDeclaredMethod();
+        testClassCanBeInstantiated();
 
         System.out.println("\n=== Test Summary ===");
         System.out.println("Total: " + total + " | Passed: " + passed + " | Failed: " + failed);
@@ -168,6 +175,44 @@ public class HelloTest {
                 : output;
             assertFalse(withoutTrailingNewline.contains(System.lineSeparator()));
         });
+    }
+
+    private static void testMainWithEmptyStringArg() {
+        assertTest("main() handles empty string arg without issue", () -> {
+            String output = captureMainOutputWithArgs(new String[]{""});
+            assertEquals("Hello, World!", output.trim());
+        });
+    }
+
+    private static void testOutputIsNotEmpty() {
+        assertTest("Output is non-empty", () -> {
+            String output = captureMainOutput();
+            assertFalse(output.isEmpty());
+        });
+    }
+
+    private static void testClassHasNoDeclaredFields() {
+        assertTest("Hello class has no declared fields", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            assertEquals(0, clazz.getDeclaredFields().length);
+        }, ClassNotFoundException.class);
+    }
+
+    private static void testClassHasExactlyOneDeclaredMethod() {
+        assertTest("Hello class has exactly one declared method (main)", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            assertEquals(1, clazz.getDeclaredMethods().length);
+            assertEquals("main", clazz.getDeclaredMethods()[0].getName());
+        }, ClassNotFoundException.class);
+    }
+
+    private static void testClassCanBeInstantiated() {
+        assertTest("Hello class can be instantiated with default constructor", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            Object instance = clazz.getDeclaredConstructor().newInstance();
+            assertNotNull(instance);
+            assertEquals("Hello", instance.getClass().getSimpleName());
+        }, Exception.class);
     }
 
     private static String captureMainOutput() {

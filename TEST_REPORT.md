@@ -2,8 +2,9 @@
 
 ## Test Execution: HelloTest.java
 
-**Date:** 2026-05-20
-**Iteration:** test-1 (test phase re-verification, 15/15 passed)
+**Date:** 2026-05-21
+**Iteration:** dev-2 (dev phase re-conversion and verification, 15/15 passed)
+**Branch:** feature_antiloop_20260521014407
 **Status:** ALL TESTS PASSED
 
 ### Summary
@@ -58,8 +59,9 @@ The Java conversion of `hello.py` to `Hello.java` is verified correct. All struc
 
 ## S10 - End-to-End Acceptance Verification
 
-**Date:** 2026-05-20
+**Date:** 2026-05-21
 **Environment:** macOS, JDK 22.0.2, Python 3.12.11
+**Branch:** feature_antiloop_20260521014407
 **Status:** ACCEPTED
 
 ### Verification Protocol

@@ -2,8 +2,8 @@
 
 ## Test Execution: HelloTest.java
 
-**Date:** 2026-05-20
-**Iteration:** test-1 (test phase re-verification, 15/15 passed)
+**Date:** 2026-05-21
+**Iteration:** dev-2 (re-verified, 15/15 passed, output matches Python baseline)
 **Status:** ALL TESTS PASSED
 
 ### Summary

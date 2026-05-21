@@ -33,6 +33,12 @@ public class HelloTest {
         testIdempotency();
         testSingleLineOutput();
 
+        System.out.println("\n--- Additional Coverage Tests ---");
+        testNoStderrOutput();
+        testOutputOnlyPrintableAscii();
+        testClassCanBeInstantiated();
+        testOutputByteLength();
+
         System.out.println("\n=== Test Summary ===");
         System.out.println("Total: " + total + " | Passed: " + passed + " | Failed: " + failed);
         if (failed == 0) {
@@ -167,6 +173,45 @@ public class HelloTest {
                 ? output.substring(0, output.length() - System.lineSeparator().length())
                 : output;
             assertFalse(withoutTrailingNewline.contains(System.lineSeparator()));
+        });
+    }
+
+    private static void testNoStderrOutput() {
+        assertTest("No output to stderr", () -> {
+            PrintStream originalErr = System.err;
+            ByteArrayOutputStream errBaos = new ByteArrayOutputStream();
+            PrintStream errCapture = new PrintStream(errBaos);
+            System.setErr(errCapture);
+            try {
+                captureMainOutput();
+            } finally {
+                System.setErr(originalErr);
+            }
+            assertEquals("", errBaos.toString());
+        });
+    }
+
+    private static void testOutputOnlyPrintableAscii() {
+        assertTest("Output contains only printable ASCII characters", () -> {
+            String output = captureMainOutput();
+            for (char c : output.toCharArray()) {
+                assertTrue(c >= 32 && c < 127 || c == '\n' || c == '\r');
+            }
+        });
+    }
+
+    private static void testClassCanBeInstantiated() {
+        assertTest("Hello class can be instantiated", () -> {
+            Hello instance = new Hello();
+            assertNotNull(instance);
+        });
+    }
+
+    private static void testOutputByteLength() {
+        assertTest("Output byte length matches expected", () -> {
+            String output = captureMainOutput();
+            int expectedLen = "Hello, World!".length() + System.lineSeparator().length();
+            assertEquals(expectedLen, output.length());
         });
     }
 

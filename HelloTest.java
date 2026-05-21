@@ -2,6 +2,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class HelloTest {
 
@@ -32,6 +40,29 @@ public class HelloTest {
         testMainWithNonEmptyArgs();
         testIdempotency();
         testSingleLineOutput();
+
+        System.out.println("\n--- Error Stream Cleanliness Tests ---");
+        testNoStderrOutput();
+        testNoStderrWithArgs();
+
+        System.out.println("\n--- Output Metrics Tests ---");
+        testOutputCharacterCount();
+        testOutputByteCount();
+        testOutputContainsSubstrings();
+        testOutputDoesNotContainUnexpectedChars();
+        testOutputIsPlainAscii();
+
+        System.out.println("\n--- Class API Minimality Tests ---");
+        testOnlyMainIsPublicStatic();
+        testClassHasNoPublicFields();
+
+        System.out.println("\n--- Exception Safety Tests ---");
+        testMainCompletesWithoutException();
+        testMainCompletesWithoutExceptionNullArgs();
+
+        System.out.println("\n--- Concurrency Safety Tests ---");
+        testConcurrentExecution();
+        testConcurrentExecutionProducesSameOutput();
 
         System.out.println("\n=== Test Summary ===");
         System.out.println("Total: " + total + " | Passed: " + passed + " | Failed: " + failed);
@@ -167,6 +198,197 @@ public class HelloTest {
                 ? output.substring(0, output.length() - System.lineSeparator().length())
                 : output;
             assertFalse(withoutTrailingNewline.contains(System.lineSeparator()));
+        });
+    }
+
+    private static void testNoStderrOutput() {
+        assertTest("main() produces no output to stderr", () -> {
+            PrintStream realOut = System.out;
+            PrintStream realErr = System.err;
+            ByteArrayOutputStream outBaos = new ByteArrayOutputStream();
+            ByteArrayOutputStream errBaos = new ByteArrayOutputStream();
+            System.setOut(new PrintStream(outBaos));
+            System.setErr(new PrintStream(errBaos));
+            try {
+                Hello.main(new String[]{});
+            } finally {
+                System.setOut(realOut);
+                System.setErr(realErr);
+            }
+            assertEquals("", errBaos.toString());
+        });
+    }
+
+    private static void testNoStderrWithArgs() {
+        assertTest("main() produces no stderr output even with args", () -> {
+            PrintStream realOut = System.out;
+            PrintStream realErr = System.err;
+            ByteArrayOutputStream outBaos = new ByteArrayOutputStream();
+            ByteArrayOutputStream errBaos = new ByteArrayOutputStream();
+            System.setOut(new PrintStream(outBaos));
+            System.setErr(new PrintStream(errBaos));
+            try {
+                Hello.main(new String[]{"unexpected", "args"});
+            } finally {
+                System.setOut(realOut);
+                System.setErr(realErr);
+            }
+            assertEquals("", errBaos.toString());
+        });
+    }
+
+    private static void testOutputCharacterCount() {
+        assertTest("Output content is exactly 13 characters", () -> {
+            String output = captureMainOutput();
+            String content = output.trim();
+            assertEquals(13, content.length());
+        });
+    }
+
+    private static void testOutputByteCount() {
+        assertTest("Output is 13 bytes in UTF-8 (pure ASCII)", () -> {
+            String output = captureMainOutput();
+            String content = output.trim();
+            byte[] bytes = content.getBytes(StandardCharsets.UTF_8);
+            assertEquals(13, bytes.length);
+        });
+    }
+
+    private static void testOutputContainsSubstrings() {
+        assertTest("Output contains expected substrings", () -> {
+            String output = captureMainOutput().trim();
+            assertTrue(output.contains("Hello"));
+            assertTrue(output.contains("World"));
+            assertTrue(output.contains(", "));
+            assertTrue(output.contains("!"));
+        });
+    }
+
+    private static void testOutputDoesNotContainUnexpectedChars() {
+        assertTest("Output does not contain digits or unexpected special chars", () -> {
+            String output = captureMainOutput().trim();
+            for (char c : output.toCharArray()) {
+                assertFalse(Character.isDigit(c));
+            }
+            assertFalse(output.contains("@"));
+            assertFalse(output.contains("#"));
+            assertFalse(output.contains("\t"));
+        });
+    }
+
+    private static void testOutputIsPlainAscii() {
+        assertTest("Output contains only ASCII printable characters", () -> {
+            String output = captureMainOutput().trim();
+            for (char c : output.toCharArray()) {
+                assertTrue(c >= 32 && c <= 126);
+            }
+        });
+    }
+
+    private static void testOnlyMainIsPublicStatic() {
+        assertTest("Only 'main' is a public static method in Hello", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            Method[] methods = clazz.getDeclaredMethods();
+            List<String> publicStatic = new ArrayList<>();
+            for (Method m : methods) {
+                int mod = m.getModifiers();
+                if (Modifier.isPublic(mod) && Modifier.isStatic(mod)) {
+                    publicStatic.add(m.getName());
+                }
+            }
+            assertEquals(1, publicStatic.size());
+            assertEquals("main", publicStatic.get(0));
+        }, ClassNotFoundException.class);
+    }
+
+    private static void testClassHasNoPublicFields() {
+        assertTest("Hello class has no public fields", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            assertEquals(0, clazz.getFields().length);
+        }, ClassNotFoundException.class);
+    }
+
+    private static void testMainCompletesWithoutException() {
+        assertTest("main() completes without throwing any exception", () -> {
+            captureMainOutput();
+        });
+    }
+
+    private static void testMainCompletesWithoutExceptionNullArgs() {
+        assertTest("main(null) completes without throwing any exception", () -> {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            PrintStream originalOut = System.out;
+            System.setOut(new PrintStream(baos));
+            try {
+                Hello.main(null);
+            } finally {
+                System.setOut(originalOut);
+            }
+        });
+    }
+
+    private static void testConcurrentExecution() {
+        assertTest("main() can be called concurrently without errors", () -> {
+            int threadCount = 10;
+            PrintStream realOut = System.out;
+            ByteArrayOutputStream sharedBaos = new ByteArrayOutputStream();
+            PrintStream sharedPs = new PrintStream(sharedBaos);
+            System.setOut(sharedPs);
+            ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+            CountDownLatch latch = new CountDownLatch(threadCount);
+            List<Throwable> errors = Collections.synchronizedList(new ArrayList<>());
+            for (int i = 0; i < threadCount; i++) {
+                executor.submit(() -> {
+                    try {
+                        Hello.main(new String[]{});
+                    } catch (Throwable t) {
+                        errors.add(t);
+                    } finally {
+                        latch.countDown();
+                    }
+                });
+            }
+            latch.await(10, TimeUnit.SECONDS);
+            executor.shutdown();
+            System.setOut(realOut);
+            assertTrue(errors.isEmpty());
+        });
+    }
+
+    private static void testConcurrentExecutionProducesSameOutput() {
+        assertTest("Concurrent calls produce identical output content", () -> {
+            String expected = "Hello, World!" + System.lineSeparator();
+            int threadCount = 10;
+            PrintStream realOut = System.out;
+            ByteArrayOutputStream sharedBaos = new ByteArrayOutputStream();
+            PrintStream sharedPs = new PrintStream(sharedBaos);
+            System.setOut(sharedPs);
+            ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+            CountDownLatch latch = new CountDownLatch(threadCount);
+            List<Throwable> errors = Collections.synchronizedList(new ArrayList<>());
+            for (int i = 0; i < threadCount; i++) {
+                executor.submit(() -> {
+                    try {
+                        Hello.main(new String[]{});
+                    } catch (Throwable t) {
+                        errors.add(t);
+                    } finally {
+                        latch.countDown();
+                    }
+                });
+            }
+            latch.await(10, TimeUnit.SECONDS);
+            executor.shutdown();
+            System.setOut(realOut);
+            assertTrue(errors.isEmpty());
+            String allOutput = sharedBaos.toString();
+            int occurrences = 0;
+            int idx = 0;
+            while ((idx = allOutput.indexOf(expected, idx)) != -1) {
+                occurrences++;
+                idx += expected.length();
+            }
+            assertEquals(threadCount, occurrences);
         });
     }
 

@@ -1,6 +1,6 @@
 # Test Report
 
-## Test Execution: HelloTest.java
+## Test Execution: HelloTest.java (基础测试套件)
 
 **Date:** 2026-05-21
 **Iteration:** TC1_2 conversion (15/15 passed)
@@ -42,45 +42,86 @@
 | Running main() twice produces identical output | PASS |
 | Output is exactly one line | PASS |
 
-### Verification Steps
+---
 
-1. Compiled with `javac -encoding UTF-8 Hello.java HelloTest.java` - SUCCESS
-2. Ran Python baseline: `python3 hello.py` -> `Hello, World!`
-3. Ran Java: `java Hello` -> `Hello, World!`
-4. Diff comparison: identical output (exit code 0)
-5. Ran full test suite: `java HelloTest` -> 15/15 PASSED
+## Test Execution: HelloExtendedTest.java (扩展测试套件)
 
-### Conclusion
+**Date:** 2026-05-21
+**Status:** ALL TESTS PASSED
 
-The Java conversion of `hello.py` to `Hello.java` is verified correct. All structural, output, and robustness tests pass.
+### Summary
+
+- Total: 26
+- Passed: 26
+- Failed: 0
+
+### Class Design Tests (6)
+
+| Test | Result |
+|------|--------|
+| Hello class is not abstract | PASS |
+| Hello class is not an interface | PASS |
+| Hello has a public default constructor | PASS |
+| Hello class has no public fields | PASS |
+| main is the only declared public method | PASS |
+| Hello class is in default (unnamed) package | PASS |
+
+### Character & Encoding Tests (8)
+
+| Test | Result |
+|------|--------|
+| Output bytes are valid UTF-8 | PASS |
+| Output contains a comma character | PASS |
+| Output contains an exclamation mark | PASS |
+| Output has a space after the comma | PASS |
+| Output byte length matches expected | PASS |
+| Output character count matches expected | PASS |
+| Output contains only ASCII characters | PASS |
+| All output characters are printable ASCII or newline | PASS |
+
+### Concurrency & Stress Tests (3)
+
+| Test | Result |
+|------|--------|
+| Concurrent execution of main() does not crash | PASS |
+| Rapid 20x execution all produce correct output | PASS |
+| Output is consistent across 10 sequential runs | PASS |
+
+### Semantic Correctness Tests (5)
+
+| Test | Result |
+|------|--------|
+| Output matches 'Hello' greeting pattern | PASS |
+| Output is exactly the classic 'Hello, World!' phrase | PASS |
+| No double spaces or tabs in output | PASS |
+| main() does not call System.exit (returns normally) | PASS |
+| main() completes without throwing any exception | PASS |
+
+### Edge Case Tests (4)
+
+| Test | Result |
+|------|--------|
+| main({}) with empty string array produces correct output | PASS |
+| main with single empty string arg produces correct output | PASS |
+| Java output is same as Python print('Hello, World!') to stdout | PASS |
+| Hello class can be loaded multiple times via reflection | PASS |
 
 ---
 
-## End-to-End Acceptance Verification
+## 综合测试结果
 
-**Date:** 2026-05-21
-**Environment:** macOS, JDK 22.0.2, Python 3.12.11
-**Status:** ACCEPTED
+| 套件 | 总数 | 通过 | 失败 |
+|------|------|------|------|
+| HelloTest (基础) | 15 | 15 | 0 |
+| HelloExtendedTest (扩展) | 26 | 26 | 0 |
+| **合计** | **41** | **41** | **0** |
 
-### Verification Protocol
+### Output Equivalence Verification
 
-1. **Environment Check** - javac 22.0.2, java 22.0.2, python3 3.12.11
-2. **Python Baseline** - `python3 hello.py` -> `Hello, World!` (exit 0)
-3. **Java Compilation** - `javac -encoding UTF-8 Hello.java HelloTest.java` (exit 0)
-4. **Java Execution** - `java Hello` -> `Hello, World!` (exit 0)
-5. **Output Comparison** - `diff` between Python and Java output: identical (exit 0)
-6. **Test Suite** - `java HelloTest` -> 15/15 PASSED (exit 0)
-
-### Results
-
-| Verification Step | Result |
-|-------------------|--------|
-| Java environment available | PASS |
-| Python baseline captured | PASS |
-| Java compilation succeeds | PASS |
-| Java output matches Python | PASS |
-| All 15 unit tests pass | PASS |
+- Python baseline: `python3 hello.py` -> `Hello, World!`
+- Java execution: `java Hello` -> `Hello, World!`
+- Diff comparison: **IDENTICAL** (exit code 0)
 
 ### Final Verdict
 
-**ACCEPTED** - The Python-to-Java conversion of `hello.py` to `Hello.java` passes all end-to-end acceptance criteria. The converted Java code compiles cleanly, produces identical output to the Python source, and passes all 15 structural/output/robustness tests.
+**ALL TESTS PASSED** - 两个测试套件共 41 个测试全部通过，涵盖基础结构、输出正确性、鲁棒性、类设计、字符编码、并发安全、语义正确性和边界场景。Java 输出与 Python 基线完全一致。

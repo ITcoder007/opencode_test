@@ -33,6 +33,14 @@ public class HelloTest {
         testIdempotency();
         testSingleLineOutput();
 
+        System.out.println("\n--- Advanced Tests ---");
+        testNoStderrOutput();
+        testStressIdempotency();
+        testClassInstantiable();
+        testReflectionInvocation();
+        testOutputByteLength();
+        testNoExtraPublicMethods();
+
         System.out.println("\n=== Test Summary ===");
         System.out.println("Total: " + total + " | Passed: " + passed + " | Failed: " + failed);
         if (failed == 0) {
@@ -167,6 +175,81 @@ public class HelloTest {
                 ? output.substring(0, output.length() - System.lineSeparator().length())
                 : output;
             assertFalse(withoutTrailingNewline.contains(System.lineSeparator()));
+        });
+    }
+
+    private static void testNoStderrOutput() {
+        assertTest("main() writes nothing to stderr", () -> {
+            PrintStream originalOut = System.out;
+            PrintStream originalErr = System.err;
+            ByteArrayOutputStream outBaos = new ByteArrayOutputStream();
+            ByteArrayOutputStream errBaos = new ByteArrayOutputStream();
+            System.setOut(new PrintStream(outBaos));
+            System.setErr(new PrintStream(errBaos));
+            try {
+                Hello.main(new String[]{});
+            } finally {
+                System.setOut(originalOut);
+                System.setErr(originalErr);
+            }
+            assertEquals("", errBaos.toString());
+        });
+    }
+
+    private static void testStressIdempotency() {
+        assertTest("Running main() 100 times produces identical output", () -> {
+            String first = captureMainOutput();
+            for (int i = 0; i < 99; i++) {
+                String current = captureMainOutput();
+                if (!first.equals(current)) {
+                    throw new AssertionError("Output differed at iteration " + (i + 2));
+                }
+            }
+        });
+    }
+
+    private static void testClassInstantiable() {
+        assertTest("Hello class can be instantiated", () -> {
+            Hello instance = new Hello();
+            assertNotNull(instance);
+        });
+    }
+
+    private static void testReflectionInvocation() {
+        assertTest("main() can be invoked via reflection", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            Method mainMethod = clazz.getMethod("main", String[].class);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            PrintStream originalOut = System.out;
+            System.setOut(new PrintStream(baos));
+            try {
+                mainMethod.invoke(null, (Object) new String[]{});
+            } finally {
+                System.setOut(originalOut);
+            }
+            assertEquals("Hello, World!", baos.toString().trim());
+        });
+    }
+
+    private static void testOutputByteLength() {
+        assertTest("Output byte length matches expected", () -> {
+            String output = captureMainOutput();
+            byte[] bytes = output.getBytes("UTF-8");
+            String expected = "Hello, World!" + System.lineSeparator();
+            int expectedLen = expected.getBytes("UTF-8").length;
+            assertEquals(expectedLen, bytes.length);
+        });
+    }
+
+    private static void testNoExtraPublicMethods() {
+        assertTest("Hello class has no unexpected public methods beyond main", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            java.lang.reflect.Method[] methods = clazz.getDeclaredMethods();
+            for (java.lang.reflect.Method m : methods) {
+                if (Modifier.isPublic(m.getModifiers()) && !m.getName().equals("main")) {
+                    throw new AssertionError("Unexpected public method: " + m.getName());
+                }
+            }
         });
     }
 

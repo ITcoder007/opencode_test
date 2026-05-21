@@ -33,6 +33,14 @@ public class HelloTest {
         testIdempotency();
         testSingleLineOutput();
 
+        System.out.println("\n--- Additional Edge Case Tests ---");
+        testOutputIsPureAscii();
+        testOutputLengthExact();
+        testMainWithEmptyStringArg();
+        testMultipleInvocationsStability();
+        testNoControlCharacters();
+        testOutputBytesMatch();
+
         System.out.println("\n=== Test Summary ===");
         System.out.println("Total: " + total + " | Passed: " + passed + " | Failed: " + failed);
         if (failed == 0) {
@@ -167,6 +175,60 @@ public class HelloTest {
                 ? output.substring(0, output.length() - System.lineSeparator().length())
                 : output;
             assertFalse(withoutTrailingNewline.contains(System.lineSeparator()));
+        });
+    }
+
+    private static void testOutputIsPureAscii() {
+        assertTest("Output contains only ASCII characters", () -> {
+            String output = captureMainOutput();
+            for (char c : output.toCharArray()) {
+                assertTrue(c < 128);
+            }
+        });
+    }
+
+    private static void testOutputLengthExact() {
+        assertTest("Output length is exactly 'Hello, World!' length + line separator length", () -> {
+            String output = captureMainOutput();
+            int expectedLen = "Hello, World!".length() + System.lineSeparator().length();
+            assertEquals(expectedLen, output.length());
+        });
+    }
+
+    private static void testMainWithEmptyStringArg() {
+        assertTest("main() handles empty string argument without crashing", () -> {
+            String output = captureMainOutputWithArgs(new String[]{""});
+            assertEquals("Hello, World!", output.trim());
+        });
+    }
+
+    private static void testMultipleInvocationsStability() {
+        assertTest("Running main() 100 times produces consistent output", () -> {
+            String reference = captureMainOutput();
+            for (int i = 0; i < 99; i++) {
+                String output = captureMainOutput();
+                assertEquals(reference, output);
+            }
+        });
+    }
+
+    private static void testNoControlCharacters() {
+        assertTest("Output contains no tab or carriage return characters", () -> {
+            String output = captureMainOutput();
+            assertFalse(output.contains("\t"));
+            assertFalse(output.contains("\r"));
+        });
+    }
+
+    private static void testOutputBytesMatch() {
+        assertTest("Output UTF-8 bytes match expected content", () -> {
+            String output = captureMainOutput();
+            byte[] expected = ("Hello, World!" + System.lineSeparator()).getBytes("UTF-8");
+            byte[] actual = output.getBytes("UTF-8");
+            assertEquals(expected.length, actual.length);
+            for (int i = 0; i < expected.length; i++) {
+                assertEquals(expected[i], actual[i]);
+            }
         });
     }
 

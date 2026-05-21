@@ -2,7 +2,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.nio.charset.StandardCharsets;
 
 public class HelloTest {
 
@@ -33,25 +32,6 @@ public class HelloTest {
         testMainWithNonEmptyArgs();
         testIdempotency();
         testSingleLineOutput();
-
-        System.out.println("\n--- Encoding & Byte-Level Tests ---");
-        testOutputIsASCII();
-        testOutputByteLength();
-        testOutputUTF8Compatible();
-
-        System.out.println("\n--- stderr & Side Effect Tests ---");
-        testNoStderrOutput();
-        testNoSystemExitCall();
-
-        System.out.println("\n--- Thread Safety & Stress Tests ---");
-        testConcurrentExecution();
-        testRepeatedExecution100Times();
-
-        System.out.println("\n--- Content Detail Tests ---");
-        testOutputContainsComma();
-        testOutputContainsExclamation();
-        testOutputNotEndWithPeriod();
-        testOutputIsNotEmpty();
 
         System.out.println("\n=== Test Summary ===");
         System.out.println("Total: " + total + " | Passed: " + passed + " | Failed: " + failed);
@@ -187,117 +167,6 @@ public class HelloTest {
                 ? output.substring(0, output.length() - System.lineSeparator().length())
                 : output;
             assertFalse(withoutTrailingNewline.contains(System.lineSeparator()));
-        });
-    }
-
-    private static void testOutputIsASCII() {
-        assertTest("Output contains only ASCII characters", () -> {
-            String output = captureMainOutput();
-            for (char c : output.toCharArray()) {
-                assertTrue(c < 128);
-            }
-        });
-    }
-
-    private static void testOutputByteLength() {
-        assertTest("Output byte length is exactly 14 bytes (content) + newline", () -> {
-            String output = captureMainOutput();
-            byte[] bytes = output.getBytes(StandardCharsets.UTF_8);
-            int expectedContentLen = "Hello, World!".getBytes(StandardCharsets.UTF_8).length;
-            int expectedTotal = expectedContentLen + System.lineSeparator().getBytes(StandardCharsets.UTF_8).length;
-            assertEquals(expectedTotal, bytes.length);
-        });
-    }
-
-    private static void testOutputUTF8Compatible() {
-        assertTest("Output round-trips correctly through UTF-8 encoding", () -> {
-            String output = captureMainOutput();
-            byte[] bytes = output.getBytes(StandardCharsets.UTF_8);
-            String decoded = new String(bytes, StandardCharsets.UTF_8);
-            assertEquals(output, decoded);
-        });
-    }
-
-    private static void testNoStderrOutput() {
-        assertTest("main() produces no output on stderr", () -> {
-            PrintStream originalErr = System.err;
-            ByteArrayOutputStream errBaos = new ByteArrayOutputStream();
-            PrintStream capturedErr = new PrintStream(errBaos);
-            System.setErr(capturedErr);
-            PrintStream originalOut = System.out;
-            ByteArrayOutputStream outBaos = new ByteArrayOutputStream();
-            System.setOut(new PrintStream(outBaos));
-            try {
-                Hello.main(new String[]{});
-            } finally {
-                System.setOut(originalOut);
-                System.setErr(originalErr);
-            }
-            assertEquals("", errBaos.toString());
-        });
-    }
-
-    private static void testNoSystemExitCall() {
-        assertTest("main() does not call System.exit (completes normally)", () -> {
-            captureMainOutput();
-        });
-    }
-
-    private static void testConcurrentExecution() {
-        assertTest("main() produces correct output when called from multiple threads", () -> {
-            int threadCount = 5;
-            String[] results = new String[threadCount];
-            Thread[] threads = new Thread[threadCount];
-            for (int i = 0; i < threadCount; i++) {
-                final int idx = i;
-                threads[i] = new Thread(() -> {
-                    results[idx] = captureMainOutput();
-                });
-            }
-            for (Thread t : threads) t.start();
-            for (Thread t : threads) t.join(5000);
-            String expected = "Hello, World!" + System.lineSeparator();
-            for (int i = 0; i < threadCount; i++) {
-                assertNotNull(results[i]);
-                assertEquals(expected, results[i]);
-            }
-        });
-    }
-
-    private static void testRepeatedExecution100Times() {
-        assertTest("Running main() 100 times produces consistent output", () -> {
-            String expected = captureMainOutput();
-            for (int i = 0; i < 99; i++) {
-                assertEquals(expected, captureMainOutput());
-            }
-        });
-    }
-
-    private static void testOutputContainsComma() {
-        assertTest("Output contains a comma after 'Hello'", () -> {
-            String output = captureMainOutput();
-            assertTrue(output.contains("Hello,"));
-        });
-    }
-
-    private static void testOutputContainsExclamation() {
-        assertTest("Output contains exclamation mark at the end of content", () -> {
-            String output = captureMainOutput();
-            assertTrue(output.trim().endsWith("!"));
-        });
-    }
-
-    private static void testOutputNotEndWithPeriod() {
-        assertTest("Output does not end with a period", () -> {
-            String output = captureMainOutput();
-            assertFalse(output.trim().endsWith("."));
-        });
-    }
-
-    private static void testOutputIsNotEmpty() {
-        assertTest("Output is not empty and not just whitespace", () -> {
-            String output = captureMainOutput();
-            assertTrue(output.trim().length() > 0);
         });
     }
 

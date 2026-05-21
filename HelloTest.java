@@ -33,6 +33,13 @@ public class HelloTest {
         testIdempotency();
         testSingleLineOutput();
 
+        System.out.println("\n--- Extended Coverage Tests ---");
+        testClassCanBeInstantiated();
+        testClassHasOnlyMainMethod();
+        testOutputByteLength();
+        testOutputIsPureAscii();
+        testConcurrentExecution();
+
         System.out.println("\n=== Test Summary ===");
         System.out.println("Total: " + total + " | Passed: " + passed + " | Failed: " + failed);
         if (failed == 0) {
@@ -167,6 +174,61 @@ public class HelloTest {
                 ? output.substring(0, output.length() - System.lineSeparator().length())
                 : output;
             assertFalse(withoutTrailingNewline.contains(System.lineSeparator()));
+        });
+    }
+
+    private static void testClassCanBeInstantiated() {
+        assertTest("Hello class can be instantiated", () -> {
+            Hello instance = new Hello();
+            assertNotNull(instance);
+        });
+    }
+
+    private static void testClassHasOnlyMainMethod() {
+        assertTest("Hello class has exactly one declared public method (main)", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            java.lang.reflect.Method[] methods = clazz.getDeclaredMethods();
+            assertEquals(1, methods.length);
+            assertEquals("main", methods[0].getName());
+        }, ClassNotFoundException.class);
+    }
+
+    private static void testOutputByteLength() {
+        assertTest("Output byte length matches expected", () -> {
+            String output = captureMainOutput();
+            byte[] bytes = output.getBytes("UTF-8");
+            int expectedLen = "Hello, World!".getBytes("UTF-8").length + System.lineSeparator().getBytes("UTF-8").length;
+            assertEquals(expectedLen, bytes.length);
+        });
+    }
+
+    private static void testOutputIsPureAscii() {
+        assertTest("Output contains only ASCII characters", () -> {
+            String output = captureMainOutput();
+            for (char c : output.toCharArray()) {
+                assertTrue(c < 128);
+            }
+        });
+    }
+
+    private static void testConcurrentExecution() {
+        assertTest("Concurrent calls produce correct output", () -> {
+            int threadCount = 10;
+            Thread[] threads = new Thread[threadCount];
+            String[] results = new String[threadCount];
+            for (int i = 0; i < threadCount; i++) {
+                final int idx = i;
+                threads[i] = new Thread(() -> {
+                    results[idx] = captureMainOutput();
+                });
+            }
+            for (Thread t : threads) t.start();
+            for (Thread t : threads) t.join();
+            String expected = "Hello, World!" + System.lineSeparator();
+            for (int i = 0; i < threadCount; i++) {
+                assertNotNull(results[i]);
+                assertEquals(expected, results[i]);
+            }
         });
     }
 

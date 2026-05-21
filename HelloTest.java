@@ -2,6 +2,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class HelloTest {
 
@@ -32,6 +35,13 @@ public class HelloTest {
         testMainWithNonEmptyArgs();
         testIdempotency();
         testSingleLineOutput();
+
+        System.out.println("\n--- Extended Coverage Tests ---");
+        testEmptyStringArray();
+        testClassCanBeInstantiated();
+        testSystemOutRestoredAfterCapture();
+        testOutputIsAsciiCompatible();
+        testConcurrentMainCalls();
 
         System.out.println("\n=== Test Summary ===");
         System.out.println("Total: " + total + " | Passed: " + passed + " | Failed: " + failed);
@@ -243,5 +253,79 @@ public class HelloTest {
         if (condition) {
             throw new AssertionError("Expected false but got true");
         }
+    }
+
+    private static void testEmptyStringArray() {
+        assertTest("main() with explicitly empty String array works", () -> {
+            String output = captureMainOutputWithArgs(new String[]{});
+            assertEquals("Hello, World!" + System.lineSeparator(), output);
+        });
+    }
+
+    private static void testClassCanBeInstantiated() {
+        assertTest("Hello class can be instantiated (default constructor)", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            Object instance = clazz.getDeclaredConstructor().newInstance();
+            assertNotNull(instance);
+            assertEquals("Hello", instance.getClass().getSimpleName());
+        }, ReflectiveOperationException.class);
+    }
+
+    private static void testSystemOutRestoredAfterCapture() {
+        assertTest("System.out is correctly restored after capture", () -> {
+            PrintStream original = System.out;
+            captureMainOutput();
+            assertTrue(System.out == original);
+        });
+    }
+
+    private static void testOutputIsAsciiCompatible() {
+        assertTest("Output bytes are valid ASCII (0x00-0x7F)", () -> {
+            String output = captureMainOutput();
+            byte[] bytes = output.getBytes(StandardCharsets.UTF_8);
+            for (byte b : bytes) {
+                assertTrue((b & 0xFF) <= 0x7F);
+            }
+        });
+    }
+
+    private static void testConcurrentMainCalls() {
+        assertTest("Concurrent main() calls do not throw exceptions", () -> {
+            int threadCount = 10;
+            CountDownLatch readyLatch = new CountDownLatch(threadCount);
+            CountDownLatch startLatch = new CountDownLatch(1);
+            CountDownLatch doneLatch = new CountDownLatch(threadCount);
+            AtomicInteger errorCount = new AtomicInteger(0);
+
+            ByteArrayOutputStream sharedBaos = new ByteArrayOutputStream();
+            PrintStream sharedPs = new PrintStream(sharedBaos);
+            PrintStream originalOut = System.out;
+
+            System.setOut(sharedPs);
+            try {
+                for (int i = 0; i < threadCount; i++) {
+                    new Thread(() -> {
+                        try {
+                            readyLatch.countDown();
+                            startLatch.await();
+                            Hello.main(new String[]{});
+                        } catch (Exception e) {
+                            errorCount.incrementAndGet();
+                        } finally {
+                            doneLatch.countDown();
+                        }
+                    }).start();
+                }
+                readyLatch.await();
+                startLatch.countDown();
+                doneLatch.await();
+            } finally {
+                System.setOut(originalOut);
+            }
+
+            assertEquals(0, errorCount.get());
+            String output = sharedBaos.toString().trim();
+            assertTrue(output.contains("Hello, World!"));
+        }, InterruptedException.class);
     }
 }

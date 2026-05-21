@@ -3,16 +3,16 @@
 ## Test Execution: HelloTest.java
 
 **Date:** 2026-05-21
-**Iteration:** TC1_2 iteration 1 (python-to-java conversion verification, 15/15 passed)
+**Iteration:** TC1_2 iteration 2 (extended coverage, 20/20 passed)
 **Status:** ALL TESTS PASSED
 
 ### Summary
 
-- Total: 15
-- Passed: 15
+- Total: 20
+- Passed: 20
 - Failed: 0
 
-### Basic Structure Tests
+### Basic Structure Tests (5)
 
 | Test | Result |
 |------|--------|
@@ -22,7 +22,7 @@
 | Hello has a main method | PASS |
 | main method is public static void with String[] param | PASS |
 
-### Output Correctness Tests
+### Output Correctness Tests (6)
 
 | Test | Result |
 |------|--------|
@@ -33,7 +33,7 @@
 | No trailing spaces before newline | PASS |
 | Exact output is 'Hello, World!' + newline | PASS |
 
-### Robustness Tests
+### Robustness Tests (4)
 
 | Test | Result |
 |------|--------|
@@ -42,46 +42,44 @@
 | Running main() twice produces identical output | PASS |
 | Output is exactly one line | PASS |
 
+### Extended Coverage Tests (5)
+
+| Test | Result |
+|------|--------|
+| main() with explicitly empty String array works | PASS |
+| Hello class can be instantiated (default constructor) | PASS |
+| System.out is correctly restored after capture | PASS |
+| Output bytes are valid ASCII (0x00-0x7F) | PASS |
+| Concurrent main() calls do not throw exceptions | PASS |
+
+### MECE Coverage Analysis
+
+| 维度 | 覆盖场景 | 用例数 |
+|------|----------|--------|
+| 类结构 | 加载、命名、访问修饰符 | 3 |
+| 方法签名 | 存在性、参数类型、返回值、修饰符 | 2 |
+| 输出内容 | 精确匹配、Python 等价性 | 2 |
+| 输出格式 | 换行、无前后空白 | 4 |
+| 边界输入 | null args、空数组、非空 args | 3 |
+| 重复执行 | 幂等性、单行输出 | 2 |
+| 类实例化 | 默认构造函数 | 1 |
+| 编码合规 | ASCII 兼容性 | 1 |
+| 资源管理 | System.out 恢复 | 1 |
+| 并发安全 | 多线程调用 | 1 |
+
 ### Verification Steps
 
 1. Compiled with `javac -encoding UTF-8 Hello.java HelloTest.java` - SUCCESS
-2. Ran Python baseline: `python3 hello.py` -> `Hello, World!`
-3. Ran Java: `java Hello` -> `Hello, World!`
-4. Diff comparison: identical output (exit code 0)
-5. Ran full test suite: `java HelloTest` -> 15/15 PASSED
-
-### Conclusion
-
-The Java conversion of `hello.py` to `Hello.java` is verified correct. All structural, output, and robustness tests pass. Results pushed to output repository.
+2. Ran full test suite: `java HelloTest` -> 20/20 PASSED
 
 ---
 
-## S10 - End-to-End Acceptance Verification
+## Iteration History
 
-**Date:** 2026-05-21
-**Environment:** macOS, JDK 22.0.2, Python 3.12.11
-**Branch:** feature_python_to_java_TC1_2_20260521090152
-**Status:** ACCEPTED
+### Iteration 1 (TC1_2, 15/15 passed)
 
-### Verification Protocol
+初始转换验证：基础结构 5 + 输出正确性 6 + 鲁棒性 4 = 15/15 PASSED
 
-1. **Environment Check** - javac 22.0.2, java 22.0.2, python3 3.12.11
-2. **Python Baseline** - `python3 hello.py` -> `Hello, World!` (exit 0)
-3. **Java Compilation** - `javac -encoding UTF-8 Hello.java HelloTest.java` (exit 0)
-4. **Java Execution** - `java Hello` -> `Hello, World!` (exit 0)
-5. **Output Comparison** - `diff` between Python and Java output: identical (exit 0)
-6. **Test Suite** - `java HelloTest` -> 15/15 PASSED (exit 0)
+### Iteration 2 (TC1_2, 20/20 passed)
 
-### Results
-
-| Verification Step | Result |
-|-------------------|--------|
-| Java environment available | PASS |
-| Python baseline captured | PASS |
-| Java compilation succeeds | PASS |
-| Java output matches Python | PASS |
-| All 15 unit tests pass | PASS |
-
-### Final Verdict
-
-**ACCEPTED** - The Python-to-Java conversion of `hello.py` to `Hello.java` passes all end-to-end acceptance criteria. The converted Java code compiles cleanly, produces identical output to the Python source, and passes all 15 structural/output/robustness tests.
+扩展覆盖：新增 5 项测试（空数组输入、类实例化、System.out 恢复、ASCII 编码验证、并发安全），总计 20/20 PASSED

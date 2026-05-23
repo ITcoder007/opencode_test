@@ -1,5 +1,6 @@
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
@@ -32,6 +33,23 @@ public class HelloTest {
         testMainWithNonEmptyArgs();
         testIdempotency();
         testSingleLineOutput();
+
+        System.out.println("\n--- Reflection / Class Structure Tests ---");
+        testClassCanBeInstantiated();
+        testClassHasDefaultConstructor();
+        testClassHasExactlyOneDeclaredMethod();
+        testClassIsNotAbstract();
+        testClassIsNotFinal();
+
+        System.out.println("\n--- Output Content Tests ---");
+        testOutputContainsHello();
+        testOutputContainsWorld();
+        testOutputContainsComma();
+        testOutputLengthIsCorrect();
+        testOutputIsPrintableAscii();
+
+        System.out.println("\n--- Concurrent Safety Tests ---");
+        testConcurrentExecution();
 
         System.out.println("\n=== Test Summary ===");
         System.out.println("Total: " + total + " | Passed: " + passed + " | Failed: " + failed);
@@ -167,6 +185,113 @@ public class HelloTest {
                 ? output.substring(0, output.length() - System.lineSeparator().length())
                 : output;
             assertFalse(withoutTrailingNewline.contains(System.lineSeparator()));
+        });
+    }
+
+    private static void testClassCanBeInstantiated() {
+        assertTest("Hello class can be instantiated", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            Constructor<?> ctor = clazz.getDeclaredConstructor();
+            Object instance = ctor.newInstance();
+            assertNotNull(instance);
+            assertEquals("Hello", instance.getClass().getSimpleName());
+        }, ReflectiveOperationException.class);
+    }
+
+    private static void testClassHasDefaultConstructor() {
+        assertTest("Hello has a public default constructor", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            Constructor<?>[] ctors = clazz.getDeclaredConstructors();
+            assertTrue(ctors.length >= 1);
+            boolean found = false;
+            for (Constructor<?> c : ctors) {
+                if (c.getParameterCount() == 0) {
+                    found = true;
+                    break;
+                }
+            }
+            assertTrue(found);
+        }, ClassNotFoundException.class);
+    }
+
+    private static void testClassHasExactlyOneDeclaredMethod() {
+        assertTest("Hello declares exactly one method (main)", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            Method[] methods = clazz.getDeclaredMethods();
+            assertEquals(1, methods.length);
+            assertEquals("main", methods[0].getName());
+        }, ClassNotFoundException.class);
+    }
+
+    private static void testClassIsNotAbstract() {
+        assertTest("Hello class is not abstract", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            assertFalse(Modifier.isAbstract(clazz.getModifiers()));
+        }, ClassNotFoundException.class);
+    }
+
+    private static void testClassIsNotFinal() {
+        assertTest("Hello class is not final (allows subclassing)", () -> {
+            Class<?> clazz = Class.forName("Hello");
+            assertFalse(Modifier.isFinal(clazz.getModifiers()));
+        }, ClassNotFoundException.class);
+    }
+
+    private static void testOutputContainsHello() {
+        assertTest("Output contains 'Hello'", () -> {
+            String output = captureMainOutput();
+            assertTrue(output.contains("Hello"));
+        });
+    }
+
+    private static void testOutputContainsWorld() {
+        assertTest("Output contains 'World'", () -> {
+            String output = captureMainOutput();
+            assertTrue(output.contains("World"));
+        });
+    }
+
+    private static void testOutputContainsComma() {
+        assertTest("Output contains comma separator", () -> {
+            String output = captureMainOutput();
+            assertTrue(output.contains(","));
+        });
+    }
+
+    private static void testOutputLengthIsCorrect() {
+        assertTest("Output length equals 'Hello, World!' + newline length", () -> {
+            String output = captureMainOutput();
+            assertEquals("Hello, World!".length() + System.lineSeparator().length(), output.length());
+        });
+    }
+
+    private static void testOutputIsPrintableAscii() {
+        assertTest("All output characters are printable ASCII or newline", () -> {
+            String output = captureMainOutput();
+            for (char c : output.toCharArray()) {
+                if (c == '\n' || c == '\r') continue;
+                assertTrue(c >= 32 && c <= 126);
+            }
+        });
+    }
+
+    private static void testConcurrentExecution() {
+        assertTest("Multiple threads calling main() concurrently produce correct output", () -> {
+            int threadCount = 5;
+            Thread[] threads = new Thread[threadCount];
+            String[] results = new String[threadCount];
+            for (int i = 0; i < threadCount; i++) {
+                final int idx = i;
+                threads[i] = new Thread(() -> {
+                    results[idx] = captureMainOutput();
+                });
+            }
+            for (Thread t : threads) t.start();
+            for (Thread t : threads) t.join(5000);
+            for (int i = 0; i < threadCount; i++) {
+                assertNotNull(results[i]);
+                assertEquals("Hello, World!" + System.lineSeparator(), results[i]);
+            }
         });
     }
 

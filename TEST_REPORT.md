@@ -225,3 +225,46 @@ All verification steps pass. Conversion is correct and complete.
 ### Conclusion
 
 Python-to-Java conversion verified on feature branch. All tests pass, output matches Python baseline.
+
+---
+
+## Test Phase - 回归验证（Iteration 3 之后）
+
+**Date:** 2026-05-25
+**Environment:** macOS, JDK 22.0.2, Python 3.x
+**Status:** ALL TESTS PASSED
+
+### 验证步骤
+
+1. **编译** - `javac -encoding UTF-8 Hello.java HelloTest.java HelloTestExtended.java` - SUCCESS
+2. **Python 基线** - `python3 hello.py` -> `Hello, World!`
+3. **Java 执行** - `java Hello` -> `Hello, World!`
+4. **输出对比** - diff: IDENTICAL
+5. **基础测试套件** - `java HelloTest` -> 15/15 PASSED
+6. **扩展测试套件** - `java HelloTestExtended` -> 22/22 PASSED
+
+### 汇总
+
+| 测试套件 | 总数 | 通过 | 失败 |
+|----------|------|------|------|
+| HelloTest.java | 15 | 15 | 0 |
+| HelloTestExtended.java | 22 | 22 | 0 |
+| **合计** | **37** | **37** | **0** |
+
+### 覆盖维度
+
+- 类结构（存在性、名称、可见性、方法签名）- 5 tests
+- 输出正确性（内容、格式、换行、无多余空白）- 6 tests
+- 鲁棒性（null args、多余 args、幂等性、单行）- 4 tests
+- 字节级验证（内容、长度、纯 ASCII）- 3 tests
+- 编码正确性（UTF-8 兼容、无 BOM、无控制字符）- 3 tests
+- 状态副作用（System.out 恢复、无状态累积、不影响 stderr）- 3 tests
+- 反射调用（可反射调用、可访问性、null args 反射）- 3 tests
+- 并发安全（10 线程并发、共享流一致性）- 2 tests
+- 压力测试（1000 次执行、10000 参数数组、空字符串参数）- 3 tests
+- Python 等价性（字节级对比、无 Python 残留）- 2 tests
+- 边界情况（独立线程、无异常、不写 stderr）- 3 tests
+
+### 结论
+
+37/37 测试全部通过。Python-to-Java 转换在 iteration 3 之后回归验证通过，代码结构正确、输出与 Python 基线一致、编码/并发/压力场景均无问题。

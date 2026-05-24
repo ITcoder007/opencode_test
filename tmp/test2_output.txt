@@ -1,0 +1,11 @@
+Picked up JAVA_TOOL_OPTIONS: -javaagent:/Users/gengjiaxing/.m2/repository/org/projectlombok/lombok/1.18.34/lombok-1.18.34.jar
+=== HelloTestExtended - Extended Unit Tests ===
+
+--- Reflection / Bytecode Tests ---
+  PASS: Hello has only 'main' as declared public method
+  PASS: Hello has no declared fields
+  PASS: Hello has a default constructor
+  PASS: Hello default constructor is public
+  PASS: Loading Hello class has no stdout side effects
+
+--- Concurrency Tests ---

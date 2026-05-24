@@ -1,0 +1,50 @@
+Picked up JAVA_TOOL_OPTIONS: -javaagent:/Users/gengjiaxing/.m2/repository/org/projectlombok/lombok/1.18.34/lombok-1.18.34.jar
+=== HelloTestExtended - Extended Unit Tests ===
+
+--- Reflection / Bytecode Tests ---
+  PASS: Hello has only 'main' as declared public method
+  PASS: Hello has no declared fields
+  PASS: Hello has a default constructor
+  PASS: Hello default constructor is public
+  PASS: Loading Hello class has no stdout side effects
+
+--- Concurrency Tests ---
+Hello, World!
+Hello, World!
+Hello, World!
+Hello, World!
+Hello, World!
+Hello, World!
+Hello, World!
+Hello, World!
+Hello, World!
+Hello, World!
+  PASS: 10 concurrent main() calls all complete without error
+Hello, World!
+Hello, World!
+Hello, World!
+Hello, World!
+Hello, World!
+  PASS: Concurrent calls do not throw exceptions
+
+--- Encoding & Charset Tests ---
+  PASS: Output contains only ASCII characters
+  PASS: Output bytes are valid UTF-8
+  PASS: Output has exactly 13 characters (before newline)
+
+--- Output Stream Independence Tests ---
+  PASS: System.out is correctly restored after main()
+  PASS: 5 sequential calls produce independent outputs
+  PASS: main() writes to whatever System.out is set to
+
+--- Precision & Edge Case Tests ---
+  PASS: Output matches 'Hello, World!' character by character
+  PASS: Captured output is a distinct string (not interned)
+  PASS: main() does not call System.exit()
+  PASS: main() executes fully (output is complete)
+  PASS: Hello class is not abstract
+  PASS: Hello class is not final
+
+=== Extended Test Summary ===
+Total: 19 | Passed: 19 | Failed: 0
+Result: ALL TESTS PASSED

@@ -1,0 +1,27 @@
+Picked up JAVA_TOOL_OPTIONS: -javaagent:/Users/gengjiaxing/.m2/repository/org/projectlombok/lombok/1.18.34/lombok-1.18.34.jar
+=== HelloTest - Unit Tests for Hello.java ===
+
+--- Basic Structure Tests ---
+  PASS: Hello class exists and can be loaded
+  PASS: Class is named 'Hello'
+  PASS: Hello class is public
+  PASS: Hello has a main method
+  PASS: main method is public static void with String[] param
+
+--- Output Correctness Tests ---
+  PASS: main() outputs 'Hello, World!'
+  PASS: Java output matches Python print('Hello, World!') output
+  PASS: Output ends with system newline (matches println behavior)
+  PASS: Output has no leading whitespace
+  PASS: No trailing spaces before newline
+  PASS: Exact output is 'Hello, World!' + newline
+
+--- Robustness Tests ---
+  PASS: main() handles null args without crashing
+  PASS: main() ignores extra arguments gracefully
+  PASS: Running main() twice produces identical output
+  PASS: Output is exactly one line
+
+=== Test Summary ===
+Total: 15 | Passed: 15 | Failed: 0
+Result: ALL TESTS PASSED

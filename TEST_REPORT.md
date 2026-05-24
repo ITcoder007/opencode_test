@@ -220,3 +220,109 @@ All verification steps pass. Conversion is correct and complete.
 ### Conclusion
 
 All verification steps pass. Python-to-Java conversion of `hello.py` to `Hello.java` is confirmed correct and complete on branch `feature_python_to_java_20260525065329`.
+
+---
+
+## Test Phase - Complementary Test Suite (HelloTestComplement.java)
+
+**Date:** 2026-05-25
+**Environment:** macOS, JDK 22.0.2
+**Status:** ALL TESTS PASSED
+
+### Summary
+
+- HelloTest.java: 15/15 PASSED
+- HelloTestExtended.java: 22/22 PASSED
+- HelloTestComplement.java: 38/38 PASSED
+- **Grand Total: 75/75 PASSED, 0 FAILED**
+
+### Complementary Test Categories
+
+#### Class Introspection Tests (11)
+
+| Test | Result |
+|------|--------|
+| Hello class is in default (unnamed) package | PASS |
+| Hello class is not abstract | PASS |
+| Hello class is not final | PASS |
+| Hello class is not an interface | PASS |
+| Hello class is not an enum | PASS |
+| Hello has a public default constructor | PASS |
+| Hello declares exactly one method (main) | PASS |
+| Hello has no declared fields | PASS |
+| Hello superclass is java.lang.Object | PASS |
+| Hello does not implement any interfaces | PASS |
+| Hello class has no runtime annotations | PASS |
+
+#### Method Signature Deep Tests (4)
+
+| Test | Result |
+|------|--------|
+| main method has no type parameters | PASS |
+| main method return type is exactly void.class | PASS |
+| main method is not synthetic | PASS |
+| main method is not a bridge method | PASS |
+
+#### Output String Analysis Tests (10)
+
+| Test | Result |
+|------|--------|
+| Output contains comma character | PASS |
+| Output contains exclamation mark | PASS |
+| Output has exactly one space after comma | PASS |
+| Trimmed output equals 'Hello, World!' exactly | PASS |
+| First character of output is 'H' | PASS |
+| Last content character before newline is '!' | PASS |
+| Output contains no tab characters | PASS |
+| Output content has no carriage return | PASS |
+| Trimmed output is exactly 13 characters | PASS |
+| Output does not contain null character | PASS |
+
+#### Python Semantic Equivalence Tests (3)
+
+| Test | Result |
+|------|--------|
+| Java println behavior matches Python print() semantics (auto-newline) | PASS |
+| Java main is always executed (no if __name__ guard needed) | PASS |
+| Java output matches Python runtime output byte-for-byte | PASS |
+
+#### Instantiation & Object Tests (5)
+
+| Test | Result |
+|------|--------|
+| Hello class can be instantiated with default constructor | PASS |
+| Hello instance is not null | PASS |
+| Hello instance toString() does not throw | PASS |
+| Hello instance equals itself (reflexive) | PASS |
+| Hello instance hashCode() returns without error | PASS |
+
+#### Main Method Variadic Edge Cases (3)
+
+| Test | Result |
+|------|--------|
+| main() handles args array with single null element | PASS |
+| main() handles args with Unicode characters | PASS |
+| main() handles very long string argument (1MB) | PASS |
+
+#### Output Stream Integrity Tests (2)
+
+| Test | Result |
+|------|--------|
+| main() does not close System.out | PASS |
+| main() output is deterministic across 100 sequential runs | PASS |
+
+### Test Design Rationale
+
+补充测试基于 MECE 原则，覆盖前两轮测试未涉及的维度：
+
+1. **类内省验证**：确认类的修饰符、继承关系、接口实现、构造函数、方法数量、字段数量等元数据正确
+2. **方法签名深度验证**：检查 main 方法的泛型参数、返回类型、synthetic/bridge 属性
+3. **输出字符串分析**：逐字符验证输出的格式细节（首字符、尾字符、逗号后空格、无制表符等）
+4. **Python 语义等价性**：验证 println 与 Python print() 的换行语义一致、main 入口点无 `__name__` 守卫
+5. **实例化与对象行为**：验证 Hello 类可实例化、toString/hashCode/equals 行为正常
+6. **参数边界场景**：null 元素数组、Unicode 参数、1MB 超长字符串参数
+7. **输出流完整性**：main() 不关闭 System.out、输出确定性
+
+### Conclusion
+
+75/75 测试全部通过。Python-to-Java 转换在类结构、方法签名、输出字符级分析、语义等价性、实例化行为、参数边界和输出流完整性方面均经过充分验证。

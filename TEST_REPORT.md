@@ -113,3 +113,89 @@ The Java conversion of `hello.py` to `Hello.java` is verified correct. All struc
 ### Conclusion
 
 Re-verified on branch `feature_python_to_java_20260524114000`. All conversions and tests confirmed passing.
+
+---
+
+## Extended Test Execution - HelloExtendedTest.java
+
+**Date:** 2026-05-24
+**Environment:** macOS, JDK 22.0.2
+**Status:** ALL EXTENDED TESTS PASSED
+
+### Summary
+
+- Total: 27 (新增 27 个扩展测试)
+- Passed: 27
+- Failed: 0
+- 与原有 15 个测试合计: **42/42 ALL PASSED**
+
+### Class Integrity Tests (6)
+
+| Test | Result |
+|------|--------|
+| Hello class is not abstract | PASS |
+| Hello class is not an interface | PASS |
+| Hello class is not an enum | PASS |
+| Hello has a default (no-arg) constructor | PASS |
+| Hello can be instantiated with new Hello() | PASS |
+| Hello has exactly one public method (main) | PASS |
+
+### Output Stream Safety Tests (4)
+
+| Test | Result |
+|------|--------|
+| No output to stderr during normal execution | PASS |
+| System.out is unchanged after calling main() | PASS |
+| No stderr output when main called with null args | PASS |
+| No stderr output when main called with non-empty args | PASS |
+
+### Output Content Edge Cases (10)
+
+| Test | Result |
+|------|--------|
+| Output content has exactly 13 characters ('Hello, World!') | PASS |
+| All characters in output are printable ASCII (32-126) | PASS |
+| Output contains no tab characters | PASS |
+| Output does not start with UTF-8 BOM | PASS |
+| Output contains no blank lines | PASS |
+| Output with empty String[] matches output with no args | PASS |
+| Output is valid UTF-8 decodable without errors | PASS |
+| Output does not contain lone carriage return (\r) | PASS |
+| 'Hello, World!' contains no digits | PASS |
+| Output contains expected punctuation (comma and exclamation) | PASS |
+
+### Execution Behavior Tests (4)
+
+| Test | Result |
+|------|--------|
+| main() completes within 1 second | PASS |
+| 10 rapid consecutive executions all produce correct output | PASS |
+| main() does not throw any exception | PASS |
+| main() ignores large args array (100 elements) | PASS |
+
+### Conversion Fidelity Tests (3)
+
+| Test | Result |
+|------|--------|
+| Java output byte-for-byte identical to Python print('Hello, World!') | PASS |
+| Output does not contain semicolons | PASS |
+| Hello class has no package declaration (default package) | PASS |
+
+### Compilation
+
+```
+javac -encoding UTF-8 Hello.java HelloTest.java HelloExtendedTest.java
+```
+
+编译成功，无错误。
+
+### Test Execution Commands
+
+```bash
+java HelloTest          # 15/15 PASSED
+java HelloExtendedTest  # 27/27 PASSED
+```
+
+### Final Verdict
+
+**42/42 ALL TESTS PASSED** — 转换后的 `Hello.java` 通过全部 42 个单元测试（原有 15 + 扩展 27），涵盖类结构完整性、输出流安全性、输出内容边界、执行行为和转换保真度五个维度。

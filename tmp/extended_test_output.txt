@@ -1,0 +1,39 @@
+Picked up JAVA_TOOL_OPTIONS: -javaagent:/Users/gengjiaxing/.m2/repository/org/projectlombok/lombok/1.18.34/lombok-1.18.34.jar
+=== HelloExtendedTest - Additional Coverage ===
+
+--- Class Completeness Tests ---
+  PASS: Hello extends Object directly
+  PASS: Hello implements no interfaces
+  PASS: Hello has no declared fields
+  PASS: Hello has exactly one declared method (main)
+  PASS: Hello has a default constructor
+  PASS: Default constructor is public
+
+--- Stderr Isolation Tests ---
+  PASS: main() does not write to stderr
+  PASS: main() does not write to stderr with non-empty args
+
+--- Output Characteristic Tests ---
+  PASS: Output is pure ASCII (no non-ASCII bytes)
+  PASS: Output length is exactly 'Hello, World!' + newline length
+  PASS: Output does not contain tab character
+  PASS: Output does not contain standalone carriage return
+
+--- Argument Boundary Tests ---
+  PASS: main() works with empty String array element
+  PASS: main() handles large args array (1000 elements)
+  PASS: main() with single empty string arg produces correct output
+  PASS: main() with Unicode args does not affect output
+
+--- Concurrency Tests ---
+Hello, World!
+Hello, World!
+Hello, World!
+Hello, World!
+Hello, World!
+Hello, World!
+Hello, World!
+Hello, World!
+Hello, World!
+Hello, World!
+  PASS: Concurrent main() calls from 10 threads all succeed

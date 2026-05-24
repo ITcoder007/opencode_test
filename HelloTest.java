@@ -2,6 +2,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.nio.charset.StandardCharsets;
 
 public class HelloTest {
 
@@ -133,15 +134,8 @@ public class HelloTest {
 
     private static void testMainWithNullArgs() {
         assertTest("main() handles null args without crashing", () -> {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            PrintStream originalOut = System.out;
-            System.setOut(new PrintStream(baos));
-            try {
-                Hello.main(null);
-            } finally {
-                System.setOut(originalOut);
-            }
-            assertEquals("Hello, World!", baos.toString().trim());
+            String output = captureMainOutputWithArgs(null);
+            assertEquals("Hello, World!", output.trim());
         });
     }
 
@@ -183,7 +177,7 @@ public class HelloTest {
         } finally {
             System.setOut(originalOut);
         }
-        return baos.toString();
+        return baos.toString(StandardCharsets.UTF_8);
     }
 
     @FunctionalInterface

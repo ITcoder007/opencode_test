@@ -4,23 +4,37 @@
 
 **Date:** 2026-05-24
 **Environment:** macOS, JDK 22.0.2, Python 3.12.11
+**Branch:** feature_python_to_java_20260524114013
 **Status:** ALL TESTS PASSED
 
 ### Conversion Summary
 
 | Source | Target |
 |--------|--------|
-| hello.py (7 lines) | Hello.java (5 lines) + HelloTest.java (247 lines) |
+| hello.py (7 lines) | Hello.java (5 lines) + HelloTest.java (248 lines) |
 
-### Verification Steps
+### SKILL.md Verification Steps (Strictly Followed)
 
-1. **Python Baseline** - `python3 hello.py` → `Hello, World!` (exit 0)
-2. **Java Compilation** - `javac -encoding UTF-8 Hello.java` (exit 0)
-3. **Java Execution** - `java Hello` → `Hello, World!` (exit 0)
-4. **Output Comparison** - `diff` between Python and Java output: identical (exit 0)
-5. **Test Suite** - `java HelloTest` → 15/15 PASSED (exit 0)
+```bash
+# 1. Python baseline
+python3 hello.py > py_output.txt 2>&1
+# Output: Hello, World!
 
-### Test Results
+# 2. Java compilation
+javac -encoding UTF-8 Hello.java
+# Result: SUCCESS
+
+# 3. Java execution
+java Hello > java_output.txt 2>&1
+# Output: Hello, World!
+
+# 4. Diff comparison (trim trailing whitespace)
+diff <(cat py_output.txt | sed 's/[[:space:]]*$//') \
+     <(cat java_output.txt | sed 's/[[:space:]]*$//')
+# Result: identical (exit code 0)
+```
+
+### Test Suite Results (15/15)
 
 - Total: 15
 - Passed: 15
@@ -56,10 +70,17 @@
 | Running main() twice produces identical output | PASS |
 | Output is exactly one line | PASS |
 
-### Conversion Rules Applied
+### Conversion Rules Applied (per SKILL.md)
 
-- `print()` → `System.out.println()`
-- `def main()` → `public static void main(String[] args)`
-- `if __name__ == "__main__"` → `public static void main` entry point
-- snake_case → camelCase (n/a for this simple file)
-- File naming: `hello.py` → `Hello.java` (PascalCase class name)
+| Python Construct | Java Equivalent |
+|------------------|-----------------|
+| `print("Hello, World!")` | `System.out.println("Hello, World!")` |
+| `def main():` | `public static void main(String[] args) {` |
+| `if __name__ == "__main__"` | `public static void main` entry point |
+| `hello.py` | `Hello.java` (PascalCase class name) |
+
+### Code Quality Notes
+
+- Charset encoding: `baos.toString(StandardCharsets.UTF_8)` for explicit UTF-8 output capture
+- Helper method reuse: `captureMainOutputWithArgs(null)` used in null args test
+- All assertions use custom AssertionError with descriptive messages

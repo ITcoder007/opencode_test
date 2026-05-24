@@ -33,6 +33,14 @@ public class HelloTest {
         testIdempotency();
         testSingleLineOutput();
 
+        System.out.println("\n--- Extended Coverage Tests ---");
+        testOutputIsPureAscii();
+        testOutputLength();
+        testCaseSensitiveMatch();
+        testRepeatedExecutionStability();
+        testNoExtraOutputToStderr();
+        testOutputContainsCommaAndSpace();
+
         System.out.println("\n=== Test Summary ===");
         System.out.println("Total: " + total + " | Passed: " + passed + " | Failed: " + failed);
         if (failed == 0) {
@@ -167,6 +175,67 @@ public class HelloTest {
                 ? output.substring(0, output.length() - System.lineSeparator().length())
                 : output;
             assertFalse(withoutTrailingNewline.contains(System.lineSeparator()));
+        });
+    }
+
+    private static void testOutputIsPureAscii() {
+        assertTest("Output contains only ASCII characters", () -> {
+            String output = captureMainOutput();
+            for (char c : output.toCharArray()) {
+                assertTrue(c < 128);
+            }
+        });
+    }
+
+    private static void testOutputLength() {
+        assertTest("Output length is correct (content + newline)", () -> {
+            String output = captureMainOutput();
+            int expectedLen = "Hello, World!".length() + System.lineSeparator().length();
+            assertEquals(expectedLen, output.length());
+        });
+    }
+
+    private static void testCaseSensitiveMatch() {
+        assertTest("Output matches with case-sensitive comparison", () -> {
+            String output = captureMainOutput();
+            assertFalse(output.contains("hello"));
+            assertFalse(output.contains("world"));
+            assertTrue(output.contains("Hello"));
+            assertTrue(output.contains("World"));
+        });
+    }
+
+    private static void testRepeatedExecutionStability() {
+        assertTest("Running main() 10 times produces consistent output", () -> {
+            String expected = captureMainOutput();
+            for (int i = 0; i < 9; i++) {
+                assertEquals(expected, captureMainOutput());
+            }
+        });
+    }
+
+    private static void testNoExtraOutputToStderr() {
+        assertTest("main() does not write to stderr", () -> {
+            ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+            PrintStream originalErr = System.err;
+            PrintStream originalOut = System.out;
+            System.setErr(new PrintStream(errContent));
+            System.setOut(new PrintStream(new ByteArrayOutputStream()));
+            try {
+                Hello.main(new String[]{});
+            } finally {
+                System.setOut(originalOut);
+                System.setErr(originalErr);
+            }
+            assertEquals(0, errContent.toString().length());
+        });
+    }
+
+    private static void testOutputContainsCommaAndSpace() {
+        assertTest("Output contains comma and space in 'Hello, World!'", () -> {
+            String output = captureMainOutput();
+            assertTrue(output.contains(", "));
+            assertTrue(output.indexOf(", ") == 5);
         });
     }
 

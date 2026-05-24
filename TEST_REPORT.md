@@ -198,3 +198,30 @@ All verification steps pass. Conversion is correct and complete.
 ### Conclusion
 
 37/37 测试全部通过。Java 转换代码在结构正确性、输出一致性、编码规范、反射调用、并发安全、压力场景和 Python 等价性方面均经过充分验证。
+
+---
+
+## 测试阶段重新验证 (Test Phase Re-run)
+
+**日期:** 2026-05-25
+**环境:** macOS, JDK 22.0.2
+**状态:** ALL TESTS PASSED
+
+### 验证步骤
+
+1. **编译** - `javac -encoding UTF-8 Hello.java HelloTest.java` - SUCCESS
+2. **编译** - `javac -encoding UTF-8 Hello.java HelloTestExtended.java` - SUCCESS
+3. **运行 HelloTest** - `java HelloTest` -> 15/15 PASSED
+4. **运行 HelloTestExtended** - `java HelloTestExtended` -> 22/22 PASSED
+
+### 结果汇总
+
+| 测试套件 | 总数 | 通过 | 失败 |
+|----------|------|------|------|
+| HelloTest.java | 15 | 15 | 0 |
+| HelloTestExtended.java | 22 | 22 | 0 |
+| **合计** | **37** | **37** | **0** |
+
+### 结论
+
+37/37 测试全部通过。Java 转换代码（`hello.py` → `Hello.java`）经验证完全正确。

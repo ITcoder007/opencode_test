@@ -198,3 +198,24 @@ All verification steps pass. Conversion is correct and complete.
 ### Conclusion
 
 37/37 测试全部通过。Java 转换代码在结构正确性、输出一致性、编码规范、反射调用、并发安全、压力场景和 Python 等价性方面均经过充分验证。
+
+---
+
+## Dev Iteration 3 - Re-verification (feature_python_to_java_20260526160620)
+
+**Date:** 2026-05-26
+**Environment:** macOS, JDK 22.0.2, Python 3.12.11
+**Status:** VERIFIED
+
+### Verification Steps
+
+1. **Compilation** - `javac -encoding UTF-8 Hello.java HelloTest.java HelloTestExtended.java` - SUCCESS
+2. **Python Baseline** - `python3 hello.py` -> `Hello, World!`
+3. **Java Execution** - `java Hello` -> `Hello, World!`
+4. **Output Comparison** - diff: IDENTICAL
+5. **Test Suite** - `java HelloTest` -> 15/15 PASSED
+6. **Extended Test Suite** - `java HelloTestExtended` -> 22/22 PASSED
+
+### Conclusion
+
+All 37/37 tests pass. Python-to-Java conversion verified on feature branch `feature_python_to_java_20260526160620`.

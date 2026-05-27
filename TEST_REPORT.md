@@ -217,3 +217,85 @@ All verification steps pass. Conversion is correct and complete.
 ### Conclusion
 
 Python-to-Java 转换验证通过，输出完全一致。分支 `feature_python_to_java_20260527112554` 已创建。
+
+---
+
+## Test Phase - Session 2026-05-27 Full Regression + Structural Tests
+
+**Date:** 2026-05-27
+**Environment:** macOS, JDK 22.0.2, Python 3.12.11
+**Status:** ALL TESTS PASSED
+
+### Summary
+
+| Test Suite | Tests | Passed | Failed |
+|------------|-------|--------|--------|
+| HelloTest.java | 15 | 15 | 0 |
+| HelloTestExtended.java | 22 | 22 | 0 |
+| HelloTestStructure.java (新增) | 14 | 14 | 0 |
+| **Grand Total** | **51** | **51** | **0** |
+
+### Python/Java Output Equivalence
+
+- `python3 hello.py` -> `Hello, World!`
+- `java Hello` -> `Hello, World!`
+- `diff` 结果：**完全一致**（退出码 0）
+
+### 新增：HelloTestStructure.java - 结构完整性测试 (14/14)
+
+#### 类继承层次测试 (4)
+
+| Test | Result |
+|------|--------|
+| Hello extends Object directly | PASS |
+| Hello implements no interfaces | PASS |
+| Hello is not abstract | PASS |
+| Hello is not final (allows subclassing) | PASS |
+
+#### 成员完整性测试 (5)
+
+| Test | Result |
+|------|--------|
+| Hello has no declared fields | PASS |
+| Hello has exactly one declared method (main) | PASS |
+| Hello has only default constructor (no declared constructors) | PASS |
+| Hello has no inner or nested classes | PASS |
+| Hello has no annotations (clean conversion) | PASS |
+
+#### 转换完整性测试 (3)
+
+| Test | Result |
+|------|--------|
+| Java source has no Python shebang line | PASS |
+| Java source has no Python indentation artifacts | PASS |
+| Source file has .java extension | PASS |
+
+#### 退出码测试 (2)
+
+| Test | Result |
+|------|--------|
+| main() completes without System.exit() | PASS |
+| Running Hello as subprocess exits with code 0 | PASS |
+
+### 测试覆盖维度汇总（MECE 分析）
+
+| 维度 | 覆盖测试 | 状态 |
+|------|----------|------|
+| 类结构（存在、名称、可见性、继承、接口） | HelloTest + HelloTestStructure | 完整 |
+| 方法签名（修饰符、返回值、参数） | HelloTest | 完整 |
+| 成员完整性（字段、构造器、内部类、注解） | HelloTestStructure | 完整 |
+| 输出内容正确性（字符串匹配、精确格式） | HelloTest | 完整 |
+| 字节级输出验证（字节内容、长度、ASCII） | HelloTestExtended | 完整 |
+| 编码正确性（UTF-8、BOM、控制字符） | HelloTestExtended | 完整 |
+| Python 等价性（字符串+字节级对比、无 Python 残留） | HelloTest + HelloTestExtended + HelloTestStructure | 完整 |
+| 鲁棒性（null args、非空 args、大参数数组） | HelloTest + HelloTestExtended | 完整 |
+| 状态副作用（System.out 恢复、无状态累积、stderr 不受影响） | HelloTestExtended | 完整 |
+| 反射调用 | HelloTestExtended | 完整 |
+| 并发安全（10 线程并发、共享流一致性） | HelloTestExtended | 完整 |
+| 压力测试（1000 次重复执行） | HelloTestExtended | 完整 |
+| 退出码验证（子进程退出码为 0） | HelloTestStructure | 完整 |
+| 转换完整性（无 Python 残留语法） | HelloTestStructure | 完整 |
+
+### Conclusion
+
+**51/51 测试全部通过。** Java 转换代码在所有维度均经过充分验证：结构正确性、输出一致性、编码规范、反射调用、并发安全、压力场景、Python 等价性、类成员完整性、继承层次、转换完整性和退出码验证。

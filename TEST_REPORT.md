@@ -220,3 +220,91 @@ All verification steps pass. Conversion is correct and complete.
 ### Conclusion
 
 All verification steps pass. Conversion is correct and complete.
+
+---
+
+## Test Phase - Supplementary Tests (HelloTestSupplementary.java)
+
+**Date:** 2026-05-28
+**Environment:** macOS, JDK 22.0.2, Python 3.12.11
+**Status:** ALL TESTS PASSED
+
+### Summary
+
+- HelloTest.java: 15/15 PASSED
+- HelloTestExtended.java: 22/22 PASSED
+- HelloTestSupplementary.java: 20/20 PASSED
+- **Grand Total: 57/57 PASSED, 0 FAILED**
+
+### Supplementary Test Categories
+
+#### 类修饰符完整性测试 (5)
+
+| Test | Result |
+|------|--------|
+| Hello class is not abstract | PASS |
+| Hello class is not final | PASS |
+| Hello class is not an interface | PASS |
+| Hello class is not an enum | PASS |
+| Hello class is not an annotation | PASS |
+
+#### 类结构完整性测试 (6)
+
+| Test | Result |
+|------|--------|
+| Hello has exactly one declared method (main) | PASS |
+| Hello has no declared fields | PASS |
+| Hello has a default public constructor | PASS |
+| Hello class is in the default package | PASS |
+| Hello class extends java.lang.Object | PASS |
+| Hello class implements no interfaces | PASS |
+
+#### 实例化测试 (2)
+
+| Test | Result |
+|------|--------|
+| Hello can be instantiated with new | PASS |
+| Instance of Hello has correct runtime type | PASS |
+
+#### 子进程退出码测试 (1)
+
+| Test | Result |
+|------|--------|
+| Running 'java Hello' exits with code 0 | PASS |
+
+#### 安全边界测试 (2)
+
+| Test | Result |
+|------|--------|
+| main() does not create or modify any files | PASS |
+| main() does not modify system properties | PASS |
+
+#### 源文件规范测试 (3)
+
+| Test | Result |
+|------|--------|
+| Hello.java source file is valid UTF-8 | PASS |
+| Hello.java has no package declaration | PASS |
+| Hello.java contains exactly one public class | PASS |
+
+#### 性能基线测试 (1)
+
+| Test | Result |
+|------|--------|
+| main() executes within 100ms | PASS |
+
+### 补充测试设计说明
+
+补充测试基于 MECE 原则，覆盖了前两轮测试（37 个）未涉及的维度：
+
+1. **类修饰符完整性**：验证 Hello 类不是 abstract/final/interface/enum/annotation，确保类的声明规范
+2. **类结构完整性**：验证只有唯一的 main 方法、无额外字段、有默认构造器、在默认包中、继承 Object、无实现接口
+3. **实例化能力**：验证可以通过反射实例化，且运行时类型正确
+4. **子进程退出码**：验证作为独立 JVM 进程运行时退出码为 0 且输出正确
+5. **安全边界**：验证 main() 不产生文件 I/O 副作用、不修改系统属性
+6. **源文件规范**：验证源文件 UTF-8 编码、无 package 声明、只含一个 public class
+7. **性能基线**：验证单次执行在 100ms 内完成
+
+### Conclusion
+
+57/57 测试全部通过。Java 转换代码在结构正确性、输出一致性、编码规范、反射调用、并发安全、压力场景、Python 等价性、类修饰符完整性、安全边界、源文件规范和性能基线方面均经过充分验证。

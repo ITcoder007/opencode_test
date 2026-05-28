@@ -244,3 +244,107 @@ Java 转换代码在所有维度验证通过，输出与 Python 源文件完全�
 ### 结论
 
 Dev iteration 1 重新验证通过，Hello.java 转换正确，输出与 Python 源文件完全一致。
+
+---
+
+## 2026-05-28 Test Phase — 全量回归 + 补充测试
+
+**日期:** 2026-05-28
+**环境:** macOS, JDK 22.0.2, Python 3.12.11
+**状态:** ALL TESTS PASSED
+
+### 测试执行结果
+
+| 测试套件 | 用例数 | 通过 | 失败 |
+|----------|--------|------|------|
+| HelloTest.java | 15 | 15 | 0 |
+| HelloTestExtended.java | 22 | 22 | 0 |
+| HelloTestSupplementary.java | 25 | 25 | 0 |
+| **总计** | **62** | **62** | **0** |
+
+### 补充测试 HelloTestSupplementary.java 覆盖维度
+
+#### 类实例化与构造器测试 (3)
+
+| 测试 | 结果 |
+|------|------|
+| Hello has a default constructor | PASS |
+| Hello can be instantiated via reflection | PASS |
+| Calling main via instance produces correct output | PASS |
+
+#### 类层次结构测试 (5)
+
+| 测试 | 结果 |
+|------|------|
+| Hello extends java.lang.Object directly | PASS |
+| Hello does not implement any interfaces | PASS |
+| Hello class is not abstract | PASS |
+| Hello class is not final (can be subclassed) | PASS |
+| Hello is a class, not an interface | PASS |
+
+#### 字段与成员测试 (2)
+
+| 测试 | 结果 |
+|------|------|
+| Hello has no declared fields | PASS |
+| Hello has no static fields | PASS |
+
+#### 方法清单测试 (2)
+
+| 测试 | 结果 |
+|------|------|
+| Hello declares only the main method | PASS |
+| Hello has no additional public methods beyond main | PASS |
+
+#### 包与修饰符测试 (3)
+
+| 测试 | 结果 |
+|------|------|
+| Hello is in the default (unnamed) package | PASS |
+| Hello is not an inner class | PASS |
+| Hello is not a local or anonymous class | PASS |
+
+#### 退出码验证 (1)
+
+| 测试 | 结果 |
+|------|------|
+| Hello.main() completes with exit code 0 | PASS |
+
+#### 输出内容深度分析 (6)
+
+| 测试 | 结果 |
+|------|------|
+| Output contains a comma | PASS |
+| Output contains an exclamation mark | PASS |
+| Output first character is 'H' | PASS |
+| Output last content character is '!' | PASS |
+| Output contains exactly one comma | PASS |
+| Output has exactly 2 words (Hello, World!) | PASS |
+
+#### JVM 集成测试 (3)
+
+| 测试 | 结果 |
+|------|------|
+| Hello class is loaded exactly once (same Class object) | PASS |
+| Class getName() returns 'Hello' | PASS |
+| Class getCanonicalName() returns 'Hello' | PASS |
+
+### 测试覆盖范围 MECE 分析
+
+三套测试覆盖的维度如下，各维度之间相互独立、完全穷尽：
+
+1. **结构正确性** — 类存在性、命名、修饰符、继承关系、接口、包声明、构造器、字段、方法清单
+2. **方法签名正确性** — main 方法签名、访问修饰符、参数类型、返回值类型
+3. **输出正确性** — 字符串内容、字节级对比、与 Python 等价性、行尾换行
+4. **编码与字符** — UTF-8 兼容性、无 BOM、纯 ASCII、无非法控制字符
+5. **鲁棒性** — null 参数、非空参数、空字符串参数、超大参数数组、幂等性
+6. **状态副作用** — System.out 恢复、System.err 不受影响、无静态状态污染
+7. **反射调用** — 直接反射调用、可访问性、null 参数反射调用、实例化后调用
+8. **并发安全** — 多线程并发调用、共享流输出一致性
+9. **压力测试** — 1000 次连续执行、10000 元素参数数组
+10. **进程级行为** — 退出码为 0、子进程输出正确
+11. **JVM 集成** — 类加载唯一性、类名获取、规范名获取
+
+### 结论
+
+62/62 测试全部通过。Hello.java 转换代码在所有维度均经过充分验证，输出与 Python 源文件完全一致。

@@ -221,3 +221,26 @@ All verification steps pass. Conversion is correct and complete.
 ### 结论
 
 Java 转换代码在所有维度验证通过，输出与 Python 源文件完全一致。
+
+---
+
+## 2026-05-28 Dev Iteration 1 — 分支 feature_python_to_java_20260528150915
+
+**日期:** 2026-05-28
+**环境:** macOS, JDK 22.0.2, Python 3.12.11
+**分支:** feature_python_to_java_20260528150915
+**状态:** VERIFIED
+
+### 验证步骤
+
+1. **Python 基准输出** - `python3 hello.py` -> `Hello, World!` ✅
+2. **Java 编译** - `javac -encoding UTF-8 Hello.java` ✅
+3. **Java 执行** - `java Hello` -> `Hello, World!` ✅
+4. **输出对比** - diff: 完全一致 ✅
+5. **HelloTest** - 15/15 PASSED ✅
+6. **HelloTestExtended** - 22/22 PASSED ✅
+7. **总计** - 37/37 PASSED, 0 FAILED ✅
+
+### 结论
+
+Dev iteration 1 重新验证通过，Hello.java 转换正确，输出与 Python 源文件完全一致。

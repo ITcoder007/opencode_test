@@ -257,3 +257,120 @@ Java 转换代码在所有维度验证通过，输出与 Python 源文件完全�
 ### 结论
 
 Dev iteration 2 重新验证完成。`hello.py` -> `Hello.java` 转换正确，37/37 测试全部通过，输出与 Python 完全一致。
+
+---
+
+## 2026-05-28 Test Phase - 补充测试生成与全量验证
+
+**日期:** 2026-05-28
+**环境:** macOS, JDK 22.0.2, Python 3.12.11
+**状态:** ALL TESTS PASSED
+**新增测试文件:** HelloTestSupplementary.java (24 tests)
+
+### 验证步骤
+
+1. **Python 基准输出** - `python3 hello.py` -> `Hello, World!` (exit 0)
+2. **Java 编译** - `javac -encoding UTF-8 Hello.java HelloTest.java HelloTestExtended.java HelloTestSupplementary.java` (exit 0)
+3. **Java 执行** - `java Hello` -> `Hello, World!` (exit 0)
+4. **HelloTest** - 15/15 PASSED
+5. **HelloTestExtended** - 22/22 PASSED
+6. **HelloTestSupplementary** - 24/24 PASSED
+7. **总计** - 61/61 PASSED, 0 FAILED
+
+### 新增测试覆盖维度
+
+#### 进程级验证 Tests (3)
+
+| 测试 | 结果 |
+|------|------|
+| Process: java Hello exits with code 0 | PASS |
+| Process: java Hello outputs 'Hello, World!' | PASS |
+| Process: java Hello writes nothing to stderr | PASS |
+
+#### 类元数据 Tests (5)
+
+| 测试 | 结果 |
+|------|------|
+| Hello class implements no interfaces | PASS |
+| Hello superclass is java.lang.Object | PASS |
+| Hello class is in default (unnamed) package | PASS |
+| Hello class has no annotations | PASS |
+| Hello class has exactly 1 declared method (main) | PASS |
+
+#### 输出流独立性 Tests (3)
+
+| 测试 | 结果 |
+|------|------|
+| Output goes to whichever PrintStream is set as System.out | PASS |
+| Output written to ByteArrayOutputStream is complete | PASS |
+| First stream retains output after switching to second stream | PASS |
+
+#### 性能 & 时间约束 Tests (2)
+
+| 测试 | 结果 |
+|------|------|
+| main() completes within 1 second | PASS |
+| 100 sequential calls complete within 5 seconds | PASS |
+
+#### 字符级 Python 等价性 Tests (4)
+
+| 测试 | 结果 |
+|------|------|
+| Each character matches Python output character-by-character | PASS |
+| Output content (excluding newline) is exactly 13 characters | PASS |
+| All characters are printable ASCII (32-126) | PASS |
+| Output contains no carriage return (\r) characters | PASS |
+
+#### 类加载隔离 Tests (2)
+
+| 测试 | 结果 |
+|------|------|
+| Class.forName('Hello') returns same Class object on repeated calls | PASS |
+| Main method obtained via Class.forName is consistent | PASS |
+
+#### 编译产物 Tests (2)
+
+| 测试 | 结果 |
+|------|------|
+| Hello.class file exists after compilation | PASS |
+| Hello.class file is non-empty | PASS |
+
+#### 输出不可变性 Tests (3)
+
+| 测试 | 结果 |
+|------|------|
+| hashCode() of output is consistent across calls | PASS |
+| Trimmed output has length 13 | PASS |
+| Output contains no tab characters | PASS |
+
+### 全量测试统计
+
+| 测试套件 | 测试数 | 通过 | 失败 |
+|----------|--------|------|------|
+| HelloTest.java | 15 | 15 | 0 |
+| HelloTestExtended.java | 22 | 22 | 0 |
+| HelloTestSupplementary.java | 24 | 24 | 0 |
+| **合计** | **61** | **61** | **0** |
+
+### 测试覆盖维度总结
+
+基于 MECE 原则，61 个测试覆盖了以下独立维度：
+
+1. **结构正确性**：类存在性、命名、可见性、方法签名、元数据（超类、接口、注解、方法数量）
+2. **输出正确性**：内容匹配、换行符、无多余空白、精确格式、字节级对比
+3. **Python 等价性**：字符串级、字节级、字符级逐个对比、无 Python 残留特征
+4. **编码规范**：纯 ASCII、UTF-8 兼容、无 BOM、无非法控制字符、无 \r、无 \t
+5. **鲁棒性**：null 参数、多余参数、空字符串参数、大参数数组
+6. **幂等性**：多次执行输出一致、hashCode 一致
+7. **状态副作用**：System.out 恢复、无状态累积、System.err 不受影响
+8. **并发安全**：10 线程并发无异常、并发输出一致性
+9. **进程级验证**：OS 子进程退出码、stdout/stderr 捕获
+10. **反射调用**：直接反射、无参数反射、方法可访问性
+11. **类加载隔离**：多次 Class.forName 返回同一对象
+12. **性能约束**：单次执行 <1s、100 次顺序执行 <5s、1000 次重复执行一致性
+13. **输出流独立性**：不同 PrintStream 目标、流切换后内容保留
+14. **编译产物**：.class 文件存在且非空
+
+### 结论
+
+61/61 测试全部通过。`hello.py` -> `Hello.java` 转换在所有维度上经过充分验证，输出与 Python 源文件完全一致。
